@@ -1,0 +1,8 @@
+**/node_modules/**
+**/dist/**
+.env.dev*
+.env.prod*
+.idea
+logs
+**/package-lock.json
+**/coverage
