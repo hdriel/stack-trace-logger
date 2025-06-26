@@ -1,131 +1,51 @@
-import winston from 'winston';
-import winstonDailyRotateFile from 'winston-daily-rotate-file';
-import { SeqTransport } from '@datalust/winston-seq';
+import { createLogger, format, transports } from 'winston';
+// import { SeqTransport } from '@datalust/winston-seq';
 import CloudWatchTransport from 'winston-cloudwatch';
 import {
-    LOGGING_LINE_TRACE,
     LOGGING_MODE,
     NODE_ENV,
     SEQ_OPTIONS,
     CLOUDWATCH_OPTIONS,
     SERVICE_NAME,
     IS_RUNNING_ON_SERVERLESS,
+    RUN_LOCALLY,
+    LOGGING_LINE_TRACE,
 } from './environment-variables';
-
 import { LOG_DIR_PATH } from './paths';
-import { REQUEST_ID } from './consts';
-const colorizer = winston.format.colorize();
+import { LOGGER_LEVEL, REQUEST_ID } from './consts';
+import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 
-export type LOGGER_LEVEL = 'error' | 'warn' | 'info' | 'debug' | 'verbose' | 'useraction' | 'silly';
-
-const enum LEVELS {
-    error = 'error',
-    warn = 'warn',
-    info = 'info',
-    debug = 'debug',
-    verbose = 'verbose',
-    useraction = 'useraction',
-    silly = 'silly',
-}
-
-interface PRINTF {
-    request_id: string;
-    timestamp: string;
-    message: string;
-    level: LEVELS;
-    [key: string]: any;
-}
-
-const LOGGING_MODE_LEVEL = LOGGING_MODE ?? LEVELS.warn;
-
-function stringifyMetaData(metadata: string | object = '') {
-    if (!metadata || typeof metadata === 'string') return metadata;
-
-    return Object.keys(metadata).length
-        ? `\n\t${Object.keys(metadata)
-            .map((key) => {
-                const value = (<any>metadata)[key];
-
-                let valueStr;
-                if (NODE_ENV === 'production') {
-                    valueStr = value && typeof value === 'object' ? JSON.stringify(value) : value;
-                } else {
-                    valueStr = value && typeof value === 'object' ? JSON.stringify(value, null, 4) : value;
-                }
-
-                return `${key}: ${valueStr}`;
-            })
-            .filter((v) => v)
-            .join(',\n\t')}`
-        : '';
-}
-
-// @ts-ignore
-const localMessageFormatter = ({
-                                   timestamp,
-                                   level,
-                                   request_id,
-                                   message,
-                                   ...metadata
-                               }: winston.Logform.TransformableInfo | PRINTF): string => {
-    return IS_RUNNING_ON_SERVERLESS
-        ? // https://www.brcline.com/blog/aws-lambda-logging-best-practices
-        `[${level}] [reqId: ${request_id}] ${message} | ${stringifyMetaData(metadata)}`
-        : colorizer.colorize(
-            level,
-            `${timestamp} [${level}] [${request_id}] ${message} ${stringifyMetaData(metadata)}\n`
-        );
-};
-
-const cloudWatchMessageFormatter = ({
-                                        timestamp,
-                                        level,
-                                        request_id,
-                                        message,
-                                        ...metadata
-                                    }: winston.LogEntry | PRINTF): string => {
-    return `[${level}] [reqId: ${request_id}] ${message} | ${stringifyMetaData(metadata)}`;
-};
+const { combine, timestamp, printf } = format;
 
 export class Logger {
     private logger;
 
-    constructor(private readonly serviceName: string = SERVICE_NAME || 'UNDEFINED') {
-        this.logger = winston.createLogger({
-            transports: [
-                new winston.transports.Console({
-                    consoleWarnLevels: ([] as string[]).concat(LOGGING_MODE_LEVEL as string),
-                    // format: winston.format.combine(
-                    //     winston.format.splat(),
-                    //     winston.format.timestamp(),
-                    //     winston.format.printf(localMessageFormatter)
-                    // ),
-                }),
-            ],
+    constructor(
+        private readonly serviceName: string = SERVICE_NAME || 'UNDEFINED',
+        private _loggingModeLevel: LOGGER_LEVEL = (LOGGING_MODE as LOGGER_LEVEL) ?? LOGGER_LEVEL.warn,
+        private readonly lineTraceLevels: LOGGER_LEVEL[] = LOGGING_LINE_TRACE
+    ) {
+        this.logger = createLogger({
+            level: this.loggingModeLevel,
+            format: combine(timestamp(), printf(localMessageFormatter)),
+            transports: [new transports.Console()],
         });
 
-        if (NODE_ENV === 'local') {
-            const transportDailyRotateFile = new winstonDailyRotateFile({
-                dirname: LOG_DIR_PATH,
-                extension: '.log',
-                filename: 'jlt-%DATE%' as any,
-                datePattern: 'YYYY-MM-DD-HH',
-                zippedArchive: true,
-                maxSize: '20m',
-                maxFiles: '14d',
-            });
-
-            // transportDailyRotateFile.on(
-            //     'rotate',
-            //     function (oldFilename, newFilename) {}
-            // );
-
-            this.logger.add(transportDailyRotateFile);
+        if ((RUN_LOCALLY || NODE_ENV !== 'production') && LOG_DIR_PATH) {
+            this.logger.add(
+                new transports.File({
+                    dirname: LOG_DIR_PATH,
+                    filename: `${this.serviceName}-${new Date().toLocaleString()}.log` as any,
+                    // zippedArchive: true,
+                    maxsize: 20,
+                    maxFiles: 14,
+                })
+            );
         }
 
         if (SEQ_OPTIONS) {
             console.log('Add SEQ winston logger extension');
-            this.logger.add(new SeqTransport({ ...SEQ_OPTIONS, onError: console.error }));
+            // this.logger.add(new SeqTransport({ ...SEQ_OPTIONS, onError: console.error }));
         }
 
         if (CLOUDWATCH_OPTIONS) {
@@ -145,84 +65,69 @@ export class Logger {
         }
 
         this.logger.on('error', (error: any) => {
+            // error fallback message to console
             console.error('Logger Error Caught: ', error);
         });
+
+        this.logger[this.loggingModeLevel]?.('LOGGER', 'logger instance created', { lineTrace: true });
     }
 
-    private static getLineTrace(error: Error) {
-        const lineTraces = error?.stack?.split('\n').filter((line) => !/\\logger\.[jt]s:\d+:\d+\),?$/.test(line)) || [];
-
-        let lineTrace = lineTraces[1];
-        for (const line of lineTraces.slice(1)) {
-            const isLoggerFile = /[lL]ogger\.[tj]s:\d+:\d+\)$/.test(line.trim());
-            if (!isLoggerFile) {
-                lineTrace = line;
-                break;
-            }
-        }
-
-        return lineTrace.trimStart();
+    get loggingModeLevel() {
+        return this._loggingModeLevel;
     }
 
-    writeLog(level: LEVELS, request_id: string, message: string, options: any = {}) {
+    writeLog(level: LOGGER_LEVEL, request_id: string, message: string, options: any = {}) {
         options = JSON.parse(JSON.stringify(options));
+        options.service_name = this.serviceName;
 
         if (options?.hasOwnProperty('message')) {
+            // I dont remember why i force to put $message instead of message
             options.$message = options.message;
             delete options.message;
         }
 
         let lineTrace;
-        if (LOGGING_LINE_TRACE.includes(level) || level === LEVELS.error) {
-            const error = new Error(message);
-            lineTrace = Logger.getLineTrace(error);
+        if (this.lineTraceLevels.includes(level) || level === LOGGER_LEVEL.error) {
+            const error = new Error(message); // must make Error right here
+            lineTrace = getLineTrace(error);
         }
+        if (lineTrace) options.line_trace = lineTrace;
 
-        if (lineTrace) {
-            options.lineTrace = lineTrace;
-        }
-
-        options.service_name = this.serviceName;
-
+        // serverless logs got correctly from console
         if (IS_RUNNING_ON_SERVERLESS) {
             // @ts-ignore
             (console[level] ?? console.log)(level, message, { request_id, ...options });
-        } else {
-            this.logger.log(level, message, { request_id, ...options });
+            return;
         }
+
+        this.logger.log(level, message, { request_id, ...options });
     }
 
     error(request_id: string | null, message: any, metadata: any = {}) {
-        this.writeLog(LEVELS.error, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.error, request_id || REQUEST_ID, message, metadata);
     }
 
     warn(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LEVELS.warn, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.warn, request_id || REQUEST_ID, message, metadata);
     }
 
     info(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LEVELS.info, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.info, request_id || REQUEST_ID, message, metadata);
     }
 
     debug(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LEVELS.debug, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.debug, request_id || REQUEST_ID, message, metadata);
     }
 
     verbose(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LEVELS.verbose, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.verbose, request_id || REQUEST_ID, message, metadata);
     }
 
-    userAction(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LEVELS.useraction, request_id || REQUEST_ID, message, metadata);
+    http(request_id: string | null, message: any, metadata = {}) {
+        this.writeLog(LOGGER_LEVEL.http, request_id || REQUEST_ID, message, metadata);
     }
 
     silly(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LEVELS.silly, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.silly, request_id || REQUEST_ID, message, metadata);
     }
 }
-
-const logger = new Logger();
-export default logger;
-
-// Print the first log, with the current logging mode
-(<any>logger)[LOGGING_MODE_LEVEL]?.('LOGGER', 'logger instance created', { LOGGING_MODE });
