@@ -1,5 +1,6 @@
 import { createLogger, format, transports } from 'winston';
-// import { SeqTransport } from '@datalust/winston-seq';
+import Transport from 'winston-transport';
+import { SeqTransport } from '@datalust/winston-seq';
 import CloudWatchTransport from 'winston-cloudwatch';
 import {
     LOGGING_MODE,
@@ -31,6 +32,7 @@ export class Logger {
             transports: [new transports.Console()],
         });
 
+        // TODO: MOVE TO HELPER FOR GETTING FILE TRANSPORT TO ADD
         if ((RUN_LOCALLY || NODE_ENV !== 'production') && LOG_DIR_PATH) {
             this.logger.add(
                 new transports.File({
@@ -43,11 +45,13 @@ export class Logger {
             );
         }
 
-        if (SEQ_OPTIONS) {
+        // TODO: MOVE TO HELPER FOR GETTING SEQ TRANSPORT TO ADD
+        if (Object.keys(SEQ_OPTIONS ?? {}).length > 0) {
             console.log('Add SEQ winston logger extension');
-            // this.logger.add(new SeqTransport({ ...SEQ_OPTIONS, onError: console.error }));
+            this.logger.add(new SeqTransport({ ...SEQ_OPTIONS, onError: console.error }));
         }
 
+        // TODO: MOVE TO HELPER FOR GETTING CLOUDWATCH TRANSPORT TO ADD
         if (CLOUDWATCH_OPTIONS) {
             // https://copyprogramming.com/howto/winston-cloudwatch-transport-not-creating-logs-when-running-on-lambda
             console.log('Add CLOUD WATCH winston logger extension');
@@ -70,6 +74,10 @@ export class Logger {
         });
 
         this.logger[this.loggingModeLevel]?.('LOGGER', 'logger instance created', { lineTrace: true });
+    }
+
+    addTransport(transport: Transport) {
+        this.logger.add(transport);
     }
 
     get loggingModeLevel() {
