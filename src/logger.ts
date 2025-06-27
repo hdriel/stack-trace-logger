@@ -18,7 +18,7 @@ import {
     LOGGING_LINE_TRACE,
     LOCAL_LOGS_DIR_PATH,
 } from './environment-variables';
-import { LOGGER_LEVEL, REQUEST_ID } from './consts';
+import { LOGGER_LEVEL, LoggerLevelType, REQUEST_ID } from './consts';
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'path';
 
@@ -27,8 +27,8 @@ export class Logger {
 
     constructor(
         private readonly serviceName: string = SERVICE_NAME || 'UNDEFINED',
-        private _loggingModeLevel: LOGGER_LEVEL = (LOGGING_MODE as LOGGER_LEVEL) ?? LOGGER_LEVEL.warn,
-        private readonly lineTraceLevels: LOGGER_LEVEL[] = LOGGING_LINE_TRACE
+        private _loggingModeLevel: LoggerLevelType = (LOGGING_MODE as LoggerLevelType) ?? LOGGER_LEVEL.WARN,
+        private readonly lineTraceLevels: LoggerLevelType[] = LOGGING_LINE_TRACE
     ) {
         this.logger = createLogger({
             level: this.loggingModeLevel,
@@ -56,7 +56,7 @@ export class Logger {
             console.log('DailyRotateFile winston logger extension Added', fileOptions);
 
             const fileErrorOptions: DailyRotateFileTransportOptions = {
-                level: LOGGER_LEVEL.error,
+                level: LOGGER_LEVEL.ERROR,
                 dirname: path.resolve(LOCAL_LOGS_DIR_PATH),
                 filename: `${this.serviceName}-%DATE%.log`,
                 datePattern: 'YYYY-MM-DD-HH',
@@ -113,7 +113,7 @@ export class Logger {
         return this._loggingModeLevel;
     }
 
-    writeLog(level: LOGGER_LEVEL, request_id: string, message: string, options: any = {}) {
+    writeLog(level: LoggerLevelType, request_id: string, message: string, options: any = {}) {
         options = JSON.parse(JSON.stringify(options));
         options.service_name = this.serviceName;
 
@@ -124,7 +124,7 @@ export class Logger {
         }
 
         let lineTrace;
-        if (this.lineTraceLevels.includes(level) || level === LOGGER_LEVEL.error) {
+        if (this.lineTraceLevels.includes(level) || level === LOGGER_LEVEL.ERROR) {
             const error = new Error(message); // must make Error right here
             lineTrace = getLineTrace(error);
         }
@@ -141,31 +141,31 @@ export class Logger {
     }
 
     error(request_id: string | null, message: any, metadata: any = {}) {
-        this.writeLog(LOGGER_LEVEL.error, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.ERROR, request_id || REQUEST_ID, message, metadata);
     }
 
     warn(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.warn, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.WARN, request_id || REQUEST_ID, message, metadata);
     }
 
     info(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.info, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.INFO, request_id || REQUEST_ID, message, metadata);
     }
 
     debug(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.debug, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.DEBUG, request_id || REQUEST_ID, message, metadata);
     }
 
     verbose(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.verbose, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.VERBOSE, request_id || REQUEST_ID, message, metadata);
     }
 
     http(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.http, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.HTTP, request_id || REQUEST_ID, message, metadata);
     }
 
     silly(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.silly, request_id || REQUEST_ID, message, metadata);
+        this.writeLog(LOGGER_LEVEL.SILLY, request_id || REQUEST_ID, message, metadata);
     }
 
     child(options: Record<string, any>): LoggerType {

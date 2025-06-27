@@ -4,14 +4,14 @@ import { LOGGER_LEVEL } from '../consts';
 describe('Logger level tests', function () {
     test('logger level logs', async () => {
         console.log('Hello World');
-        const logger = new Logger('UNIT_TEST', LOGGER_LEVEL.silly, [
-            LOGGER_LEVEL.error,
-            LOGGER_LEVEL.warn,
-            LOGGER_LEVEL.info,
-            LOGGER_LEVEL.debug,
-            LOGGER_LEVEL.http,
-            LOGGER_LEVEL.verbose,
-            LOGGER_LEVEL.silly,
+        const logger = new Logger('UNIT_TEST', LOGGER_LEVEL.SILLY, [
+            LOGGER_LEVEL.ERROR,
+            LOGGER_LEVEL.WARN,
+            LOGGER_LEVEL.INFO,
+            LOGGER_LEVEL.DEBUG,
+            LOGGER_LEVEL.HTTP,
+            LOGGER_LEVEL.VERBOSE,
+            LOGGER_LEVEL.SILLY,
         ]);
 
         logger.error(null, 'TEST ERROR', { message: 'TEST ERROR' });

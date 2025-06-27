@@ -1,6 +1,6 @@
 {
   "name": "traced-logger",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

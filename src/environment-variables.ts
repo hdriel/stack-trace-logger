@@ -1,5 +1,5 @@
 import './dotenv';
-import { LEVELS, LOGGER_LEVEL } from './consts';
+import { LEVELS, LOGGER_LEVEL, LoggerLevelType } from './consts';
 
 export const envPrefix = process.env.NODE_ENV === 'test' ? 'TEST_' : ''; // jest set NODE_ENV automatically to 'test'
 export const LOCAL_LOGS_DIR_PATH = (process.env.LOCAL_LOGS_DIR_PATH as string) || '';
@@ -28,8 +28,8 @@ export const AWS_REGION = IS_RUNNING_ON_AWS_LAMBDA
 
 export const LOGGING_MODE = process.env[`${envPrefix}LOGGING_MODE`] as string;
 const _LOGGING_LINE_TRACE = ((process.env[`${envPrefix}LOGGING_LINE_TRACE`] as string)?.split(',') ?? [
-    LOGGER_LEVEL.error,
-]) as LOGGER_LEVEL[];
+    LOGGER_LEVEL.ERROR,
+]) as LoggerLevelType[];
 export const LOGGING_LINE_TRACE = _LOGGING_LINE_TRACE
     .map((level) =>
         LEVELS[level] !== undefined

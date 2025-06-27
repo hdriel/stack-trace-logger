@@ -2,15 +2,17 @@ import { NIL } from 'uuid';
 
 export const REQUEST_ID = NIL;
 
-export const enum LOGGER_LEVEL {
-    error = 'error',
-    warn = 'warn',
-    info = 'info',
-    debug = 'debug',
-    http = 'http',
-    verbose = 'verbose',
-    silly = 'silly',
-}
+export const LOGGER_LEVEL = {
+    ERROR: 'error',
+    WARN: 'warn',
+    INFO: 'info',
+    DEBUG: 'debug',
+    HTTP: 'http',
+    VERBOSE: 'verbose',
+    SILLY: 'silly',
+} as const;
+
+export type LoggerLevelType = (typeof LOGGER_LEVEL)[keyof typeof LOGGER_LEVEL];
 
 export const LEVELS = {
     error: 0,
