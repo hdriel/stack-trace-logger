@@ -1,0 +1,10 @@
+src/
+node_modules/
+logs/
+*.log
+*.test.ts
+jest.config.ts
+tsconfig.json
+src/__mocks__
+src/__tests__
+src/example.ts

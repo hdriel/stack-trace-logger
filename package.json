@@ -1,28 +1,31 @@
 {
-  "name": "tlogger",
+  "name": "traced-logger",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "prepare": "husky install",
     "format": "prettier --write .",
     "build": "tsc",
     "test": "jest",
     "start": "node dist/index.js",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/example.ts"
   },
+  "keywords": ["logger", "typescript", "node", "winston", "cloudwatch" ,"seq"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hdriel/st-logger.git"
   },
   "lint-staged": {
-    "**/*.{js,ts,jsx,tsx,json,css,scss,md,html}": [
-      "prettier --write"
-    ]
+    "src/**/*.{js,ts,jsx,tsx,json,md}": "prettier --write .",
+    "src/**/*.{js,jsx,ts,tsx}": "eslint"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "files": [
+    "dist"
+  ],
+  "author": "Hadriel Benjo (https://github.com/hdriel)",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/hdriel/st-logger/issues"
   },
