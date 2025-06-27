@@ -1,5 +1,4 @@
 import { format, LogEntry, Logform } from 'winston';
-// import { SeqTransport } from '@datalust/winston-seq';
 import { NODE_ENV, IS_RUNNING_ON_SERVERLESS } from './environment-variables';
 import { LOGGER_LEVEL } from './consts';
 
@@ -11,8 +10,7 @@ interface PRINTF {
     [key: string]: any;
 }
 
-const { colorize } = format;
-const colorizer = colorize();
+const colorizer = format.colorize();
 
 export function stringifyMetaData(metadata: string | object = '') {
     if (!metadata || typeof metadata === 'string') return metadata;

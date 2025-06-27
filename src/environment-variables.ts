@@ -44,11 +44,7 @@ export const LOGGING_LINE_TRACE = _LOGGING_LINE_TRACE
 
 export const LOGGER_USE_SEQ = Boolean(+(process.env.LOGGER_USE_SEQ as string)) || undefined;
 export const LOGGING_SEQ_KEY = (process.env[`${envPrefix}LOGGING_KEY`] as string) || undefined;
-export const LOGGING_SEQ_HOST = (process.env[`${envPrefix}LOGGING_HOST`] as string) || 'localhost';
-export const LOGGING_SEQ_PORT = (process.env[`${envPrefix}LOGGING_PORT`] as string) || 5341;
-export const LOGGING_SEQ_USERNAME = (process.env[`${envPrefix}LOGGING_USERNAME`] as string) || undefined;
-export const LOGGING_SEQ_PASSWORD = (process.env[`${envPrefix}LOGGING_PASSWORD`] as string) || undefined;
-export const LOGGING_SEQ_URL = `http://${LOGGING_SEQ_HOST}:${LOGGING_SEQ_PORT}`;
+export const LOGGING_SEQ_URL = (process.env[`${envPrefix}LOGGING_URL`] as string) || 'https://localhost:5341';
 export const SEQ_OPTIONS = LOGGER_USE_SEQ && {
     serverUrl: LOGGING_SEQ_URL,
     apiKey: LOGGING_SEQ_KEY,

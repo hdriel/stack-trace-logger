@@ -12,8 +12,8 @@ importers:
         specifier: ^3.835.0
         version: 3.835.0
       '@datalust/winston-seq':
-        specifier: ^3.0.1
-        version: 3.0.1(encoding@0.1.13)(winston@3.17.0)
+        specifier: 2.0.0
+        version: 2.0.0(encoding@0.1.13)(winston@3.17.0)
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0
@@ -439,10 +439,10 @@ packages:
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
 
-  '@datalust/winston-seq@3.0.1':
-    resolution: {integrity: sha512-jWJd5PKcj/nM5f1T65KJgKaxPJRADWe+GEWtj1yEji1H0ub4RWhBEDLYzIFdwUy365lxtc5njsakenp4Evmv+g==}
+  '@datalust/winston-seq@2.0.0':
+    resolution: {integrity: sha512-+2jseaj02d0uKWEfrYDVoAqJ89u33jd/KYItE/kbAsH21HlULm9ZN//S0C7+MUKsGStM0JnclByvvdyk5YmxjA==}
     peerDependencies:
-      winston: ^3.17.0
+      winston: ^3.0.0
 
   '@emnapi/core@1.4.3':
     resolution: {integrity: sha512-4m62DuCE07lw01soJwPiBGC0nAww0Q+RY70VZ+n49yDIO13yyinhbWCeNnaob0lakDtWQzSdtNWzJeOJt2ma+g==}
@@ -4363,8 +4363,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  seq-logging@3.0.0:
-    resolution: {integrity: sha512-ys5QV0745vxBCWuZBPSkgoobuLoUMxTSz1g7ZclHqX1tXXKFLyRIIn8V89EPgDnfRiWfoSo4KSxy/E0MtOYYyw==}
+  seq-logging@2.2.0:
+    resolution: {integrity: sha512-2dzK9Ma6iK45lb1FoqokzFGR7v3HaF4mKuGtLeQ0991fQif7SatFxuLFw/bYNzq+Fe4y4hYfFy/02Qb61itfUw==}
     engines: {node: '>=14.18'}
 
   set-blocking@2.0.0:
@@ -5660,9 +5660,9 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@datalust/winston-seq@3.0.1(encoding@0.1.13)(winston@3.17.0)':
+  '@datalust/winston-seq@2.0.0(encoding@0.1.13)(winston@3.17.0)':
     dependencies:
-      seq-logging: 3.0.0(encoding@0.1.13)
+      seq-logging: 2.2.0(encoding@0.1.13)
       winston: 3.17.0
       winston-transport: 4.9.0
     transitivePeerDependencies:
@@ -10499,7 +10499,7 @@ snapshots:
 
   semver@7.7.2: {}
 
-  seq-logging@3.0.0(encoding@0.1.13):
+  seq-logging@2.2.0(encoding@0.1.13):
     dependencies:
       abort-controller: 3.0.0
       node-fetch: 2.7.0(encoding@0.1.13)

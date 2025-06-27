@@ -22,7 +22,7 @@
   "homepage": "https://github.com/hdriel/st-logger#readme",
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.835.0",
-    "@datalust/winston-seq": "^3.0.1",
+    "@datalust/winston-seq": "2.0.0",
     "dotenv": "^16.5.0",
     "dotenv-expand": "^12.0.2",
     "path": "^0.12.7",

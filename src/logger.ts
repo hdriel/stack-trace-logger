@@ -1,7 +1,9 @@
-import { createLogger, format, transports } from 'winston';
+import { createLogger, format, transports, Logger as LoggerType } from 'winston';
 import Transport from 'winston-transport';
+// NOTICE: Using version 2.x.x cause to:
+// seq-logging@3.0.1 THROW ERROR: Top-level await is currently not supported with the "cjs" output format
 import { SeqTransport } from '@datalust/winston-seq';
-import CloudWatchTransport from 'winston-cloudwatch';
+import CloudWatchTransport, { CloudwatchTransportOptions } from 'winston-cloudwatch';
 import {
     LOGGING_MODE,
     NODE_ENV,
@@ -16,9 +18,6 @@ import { LOG_DIR_PATH } from './paths';
 import { LOGGER_LEVEL, REQUEST_ID } from './consts';
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 
-const { combine, timestamp, printf } = format;
-
-// https://www.npmjs.com/package/winston
 export class Logger {
     private readonly logger;
 
@@ -29,8 +28,13 @@ export class Logger {
     ) {
         this.logger = createLogger({
             level: this.loggingModeLevel,
-            format: combine(timestamp(), printf(localMessageFormatter)),
             transports: [new transports.Console()],
+            format: format.combine(
+                format.timestamp(),
+                format.errors({ stack: true }),
+                format.json(),
+                format.printf(localMessageFormatter)
+            ),
         });
 
         if ((RUN_LOCALLY || NODE_ENV !== 'production') && LOG_DIR_PATH) {
@@ -46,25 +50,31 @@ export class Logger {
         }
 
         if (SEQ_OPTIONS) {
-            this.logger.add(new SeqTransport({ ...SEQ_OPTIONS, onError: console.error }));
-            console.info('SEQ winston logger extension Added');
+            const seqOptions = {
+                serverUrl: SEQ_OPTIONS?.serverUrl,
+                apiKey: SEQ_OPTIONS?.apiKey,
+                onError: console.error,
+                handleExceptions: true,
+                handleRejections: true,
+            };
+
+            this.logger.add(new SeqTransport(seqOptions));
+            console.log('SEQ winston logger extension Added');
         }
 
-        // TODO: MOVE TO HELPER FOR GETTING CLOUDWATCH TRANSPORT TO ADD
         if (CLOUDWATCH_OPTIONS) {
             // https://copyprogramming.com/howto/winston-cloudwatch-transport-not-creating-logs-when-running-on-lambda
-            console.log('Add CLOUD WATCH winston logger extension');
-            this.logger.add(
-                new CloudWatchTransport({
-                    ...CLOUDWATCH_OPTIONS,
-                    name: `${this.serviceName}-LOGS`,
-                    messageFormatter: cloudWatchMessageFormatter,
-                    logStreamName: function () {
-                        const date = new Date().toISOString().split('T')[0];
-                        return CLOUDWATCH_OPTIONS?.logStreamName.replace('DATE', date) as string;
-                    },
-                })
-            );
+            const cwOptions: CloudwatchTransportOptions = {
+                ...CLOUDWATCH_OPTIONS,
+                name: `${this.serviceName}-LOGS`,
+                messageFormatter: cloudWatchMessageFormatter,
+                logStreamName: function () {
+                    const date = new Date().toISOString().split('T')[0];
+                    return CLOUDWATCH_OPTIONS?.logStreamName.replace('DATE', date) as string;
+                },
+            };
+            this.logger.add(new CloudWatchTransport(cwOptions));
+            console.log('CLOUD WATCH winston logger extension Added');
         }
 
         this.logger.on('error', (error: any) => {
@@ -136,5 +146,9 @@ export class Logger {
 
     silly(request_id: string | null, message: any, metadata = {}) {
         this.writeLog(LOGGER_LEVEL.silly, request_id || REQUEST_ID, message, metadata);
+    }
+
+    child(options: Record<string, any>): LoggerType {
+        return this.logger.child(options);
     }
 }
