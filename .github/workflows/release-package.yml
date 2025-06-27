@@ -1,0 +1,42 @@
+name: Publish to NPM
+
+on:
+    push:
+        branches: ['main']
+
+jobs:
+    publish:
+        if: "!contains(github.event.head_commit.message, 'no-build')" # skip if 'no-build' is present
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+            contents: read
+        steps:
+            - name: checkout
+              uses: actions/checkout@v3
+
+            - name: Prepare package
+              run: |
+                cp package.json temp-package.json
+                jq 'del(.scripts.prepare)' temp-package.json > package.json
+
+            - name: setup node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 16
+                  registry-url: https://registry.npmjs.org/
+                  scope: '@hdriel'
+
+            - name: installing packages
+              run: | # Install npm packages
+                  npm ci --force --production
+                  npm i cross-env
+
+            - name: building package
+              run: | # build lib output before publish
+                  npm run build
+
+            - name: publish step
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
