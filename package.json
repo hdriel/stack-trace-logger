@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prepare": "husky install",
+    "format": "prettier --write .",
     "build": "tsc",
     "test": "jest",
     "start": "node dist/index.js",
@@ -12,6 +14,11 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hdriel/st-logger.git"
+  },
+  "lint-staged": {
+    "**/*.{js,ts,jsx,tsx,json,css,scss,md,html}": [
+      "prettier --write"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -25,6 +32,7 @@
     "@datalust/winston-seq": "2.0.0",
     "dotenv": "^16.5.0",
     "dotenv-expand": "^12.0.2",
+    "lint-staged": "^16.1.2",
     "path": "^0.12.7",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
