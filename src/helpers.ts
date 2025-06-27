@@ -1,12 +1,12 @@
 import { format, LogEntry, Logform } from 'winston';
 import { NODE_ENV, IS_RUNNING_ON_SERVERLESS } from './environment-variables';
-import { LOGGER_LEVEL } from './consts';
+import { LoggerLevelType } from './consts';
 
 interface PRINTF {
     request_id: string;
     timestamp: string;
     message: string;
-    level: LOGGER_LEVEL;
+    level: LoggerLevelType;
     [key: string]: any;
 }
 
