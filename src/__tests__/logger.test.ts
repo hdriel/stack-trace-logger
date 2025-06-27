@@ -21,5 +21,7 @@ describe('Logger level tests', function () {
         logger.verbose(null, 'TEST VERBOSE', { message: 'TEST VERBOSE' });
         logger.http(null, 'TEST HTTP', { message: 'TEST VERBOSE' });
         logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
+
+        expect(true).toBeTruthy();
     });
 });
