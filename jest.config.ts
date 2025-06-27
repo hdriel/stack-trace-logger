@@ -4,7 +4,6 @@ const config: JestConfigWithTsJest = {
     verbose: true,
     transform: { '^.+\\.ts?$': ['ts-jest', { useESM: true }] },
     extensionsToTreatAsEsm: ['.ts'],
-    moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
     roots: ['<rootDir>/src'],
     testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
@@ -14,6 +13,10 @@ const config: JestConfigWithTsJest = {
     maxWorkers: 1,
     forceExit: true,
     preset: 'ts-jest',
+    transformIgnorePatterns: ['node_modules/(?!(@datalust/winston-seq)/)'],
+    moduleNameMapper: {
+        '@datalust/winston-seq': '<rootDir>/__mocks__/@datalust/winston-seq.ts',
+    },
 };
 
 export default config;

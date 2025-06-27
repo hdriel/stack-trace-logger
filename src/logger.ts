@@ -18,6 +18,7 @@ import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from 
 
 const { combine, timestamp, printf } = format;
 
+// https://www.npmjs.com/package/winston
 export class Logger {
     private readonly logger;
 
@@ -32,7 +33,6 @@ export class Logger {
             transports: [new transports.Console()],
         });
 
-        // TODO: MOVE TO HELPER FOR GETTING FILE TRANSPORT TO ADD
         if ((RUN_LOCALLY || NODE_ENV !== 'production') && LOG_DIR_PATH) {
             this.logger.add(
                 new transports.File({
@@ -45,10 +45,9 @@ export class Logger {
             );
         }
 
-        // TODO: MOVE TO HELPER FOR GETTING SEQ TRANSPORT TO ADD
-        if (Object.keys(SEQ_OPTIONS ?? {}).length > 0) {
-            console.log('Add SEQ winston logger extension');
+        if (SEQ_OPTIONS) {
             this.logger.add(new SeqTransport({ ...SEQ_OPTIONS, onError: console.error }));
+            console.info('SEQ winston logger extension Added');
         }
 
         // TODO: MOVE TO HELPER FOR GETTING CLOUDWATCH TRANSPORT TO ADD
