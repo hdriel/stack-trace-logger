@@ -19,7 +19,7 @@ import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from 
 const { combine, timestamp, printf } = format;
 
 export class Logger {
-    private logger;
+    private readonly logger;
 
     constructor(
         private readonly serviceName: string = SERVICE_NAME || 'UNDEFINED',
