@@ -2,7 +2,7 @@ import './dotenv';
 import { LEVELS, LOGGER_LEVEL } from './consts';
 
 export const envPrefix = process.env.NODE_ENV === 'test' ? 'TEST_' : ''; // jest set NODE_ENV automatically to 'test'
-
+export const LOCAL_LOGS_DIR_PATH = (process.env.LOCAL_LOGS_DIR_PATH as string) || '';
 export const SERVICE_NAME = process.env.SERVICE_NAME || 'server';
 export const NODE_ENV = process.env.NODE_ENV || 'local';
 export const RUN_LOCALLY = !!(+(process.env.RUN_LOCALLY as string) || 0);

@@ -1,9 +1,12 @@
 import { createLogger, format, transports, Logger as LoggerType } from 'winston';
 import Transport from 'winston-transport';
+import CloudWatchTransport, { CloudwatchTransportOptions } from 'winston-cloudwatch';
+import DailyRotateFile, { DailyRotateFileTransportOptions } from 'winston-daily-rotate-file';
+
 // NOTICE: Using version 2.x.x cause to:
 // seq-logging@3.0.1 THROW ERROR: Top-level await is currently not supported with the "cjs" output format
 import { SeqTransport } from '@datalust/winston-seq';
-import CloudWatchTransport, { CloudwatchTransportOptions } from 'winston-cloudwatch';
+
 import {
     LOGGING_MODE,
     NODE_ENV,
@@ -13,10 +16,11 @@ import {
     IS_RUNNING_ON_SERVERLESS,
     RUN_LOCALLY,
     LOGGING_LINE_TRACE,
+    LOCAL_LOGS_DIR_PATH,
 } from './environment-variables';
-import { LOG_DIR_PATH } from './paths';
 import { LOGGER_LEVEL, REQUEST_ID } from './consts';
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
+import path from 'path';
 
 export class Logger {
     private readonly logger;
@@ -28,7 +32,6 @@ export class Logger {
     ) {
         this.logger = createLogger({
             level: this.loggingModeLevel,
-            transports: [new transports.Console()],
             format: format.combine(
                 format.timestamp(),
                 format.errors({ stack: true }),
@@ -36,17 +39,34 @@ export class Logger {
                 format.printf(localMessageFormatter)
             ),
         });
+        this.logger.clear().add(new transports.Console());
 
-        if ((RUN_LOCALLY || NODE_ENV !== 'production') && LOG_DIR_PATH) {
-            this.logger.add(
-                new transports.File({
-                    dirname: LOG_DIR_PATH,
-                    filename: `${this.serviceName}-${new Date().toLocaleString()}.log` as any,
-                    // zippedArchive: true,
-                    maxsize: 20,
-                    maxFiles: 14,
-                })
-            );
+        if ((RUN_LOCALLY || NODE_ENV !== 'production') && LOCAL_LOGS_DIR_PATH) {
+            const fileOptions: DailyRotateFileTransportOptions = {
+                dirname: path.resolve(LOCAL_LOGS_DIR_PATH),
+                filename: `${this.serviceName}-%DATE%.log`,
+                datePattern: 'YYYY-MM-DD-HH',
+                zippedArchive: true,
+                maxSize: '20m',
+                maxFiles: '14d',
+            };
+
+            // @ts-ignore
+            this.logger.add(new DailyRotateFile(fileOptions));
+            console.log('DailyRotateFile winston logger extension Added', fileOptions);
+
+            const fileErrorOptions: DailyRotateFileTransportOptions = {
+                level: LOGGER_LEVEL.error,
+                dirname: path.resolve(LOCAL_LOGS_DIR_PATH),
+                filename: `${this.serviceName}-%DATE%.log`,
+                datePattern: 'YYYY-MM-DD-HH',
+                zippedArchive: true,
+                maxSize: '10m',
+                maxFiles: '7d',
+            };
+
+            // @ts-ignore
+            this.logger.add(new DailyRotateFile(fileErrorOptions));
         }
 
         if (SEQ_OPTIONS) {
@@ -74,7 +94,7 @@ export class Logger {
                 },
             };
             this.logger.add(new CloudWatchTransport(cwOptions));
-            console.log('CLOUD WATCH winston logger extension Added');
+            console.log('CloudWatch winston logger extension Added');
         }
 
         this.logger.on('error', (error: any) => {
