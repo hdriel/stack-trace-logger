@@ -9,7 +9,7 @@
     "format": "prettier --write .",
     "build": "tsc",
     "test": "jest",
-    "build:readme": "node inject-code.js",
+    "build:readme": "node inject-md-code.js",
     "start": "node dist/index.js",
     "dev": "tsx src/example.ts"
   },
