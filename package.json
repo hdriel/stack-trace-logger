@@ -9,10 +9,18 @@
     "format": "prettier --write .",
     "build": "tsc",
     "test": "jest",
+    "build:readme": "node inject-code.js",
     "start": "node dist/index.js",
     "dev": "tsx src/example.ts"
   },
-  "keywords": ["logger", "typescript", "node", "winston", "cloudwatch" ,"seq"],
+  "keywords": [
+    "logger",
+    "typescript",
+    "node",
+    "winston",
+    "cloudwatch",
+    "seq"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hdriel/st-logger.git"
@@ -57,6 +65,7 @@
     "eslint-plugin-prettier": "^5.5.1",
     "husky": "^9.1.7",
     "jest": "^30.0.3",
+    "markdown-magic": "^3.7.0",
     "pnpm": "^10.12.3",
     "prettier": "^3.6.1",
     "ts-jest": "^29.4.0",

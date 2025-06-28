@@ -1,0 +1,23 @@
+version: '3.9'
+
+volumes:
+    seq-data: {}
+
+networks:
+    app-network:
+        driver: bridge
+
+services:
+    admin-logger:
+        image: datalust/seq:latest
+        container_name: admin-logger
+        environment:
+            - ACCEPT_EULA=Y
+            - SEQ_FIRSTRUN_ADMINUSERNAME=${LOGGING_USERNAME:-admin}
+            - SEQ_FIRSTRUN_ADMINPASSWORD=${LOGGING_PASSWORD:-admin}
+        volumes:
+            - seq-data:/data  # Volume to persist Seq data
+        ports:
+            - ${LOGGING_PORT:-5341}:80
+        networks:
+            - app-network
