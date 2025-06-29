@@ -3,7 +3,7 @@
 ### A lightweight logger with color and trace support.
 
 
-## 📦 התקנה
+## 📦 Installing
 
 ```bash
     npm install traced-logger
@@ -11,45 +11,50 @@
 
 # traced-logger
 
-📦 Logger חכם עם יכולות מעקב אחרי שורת הקריאה, רמות לוגים, חיבורים ל־AWS CloudWatch ו־Seq, כולל תמיכה בצבעים, כתיבה לקובץ, ותיעוד מלא לשימוש ב־Node.js ו־Lambda.
+📦 A smart logger with tracing line, log level control, integrations with AWS CloudWatch and Seq, colorized and file logging.
 
 ---
 
-## ✨ תכונות עיקריות
+## ✨ Key Features
 
-- תמיכה ברמות לוג (DEBUG, INFO, ERROR וכו') עם הדגשה צבעונית ב־console
-- תיעוד מיקום ההפעלה של הלוג במערכת (קובץ ושורה)
-- כתיבה אוטומטית ללוגים לקובץ (בהתאם ל־ENV)
-- חיבור ל־[Seq](https://datalust.co/seq) לניהול וניטור לוגים
-- חיבור ל־AWS CloudWatch עם התאמה להרצת Lambda
-- התאמה קלה עם משתני סביבה
-- יצירת loggers שונים בהתאמות שונות עזרת מחלקה
-
----
-
-## 📦 התקנה
-
-```bash
-npm install traced-logger
-```
+- Supports multiple log levels (DEBUG, INFO, ERROR, etc.) with colored console output
+- Captures the exact location of the log call (file and line number)
+- Automatically writes logs to files based on environment configuration
+- Integrates with Seq for log management and monitoring
+- Integrates with AWS CloudWatch with built-in Lambda compatibility
+- Easy configuration using environment variables
+- Supports creating multiple customized loggers using a class-based API
 
 ---
 
-## 🛠 שימוש בסיסי
+## 🛠  Usage
 
 ```ts
-import { createLogger, LOGGER_LEVEL, type LoggerLevel } from 'traced-logger';
+import Logger, { LOGGER_LEVEL } from 'traced-logger';
 
-const logger = createLogger();
+console.log('Hello World');
+const logger = new Logger('UNIT_TEST', LOGGER_LEVEL.SILLY, [
+    LOGGER_LEVEL.ERROR,
+    LOGGER_LEVEL.WARN,
+    LOGGER_LEVEL.INFO,
+    // LOGGER_LEVEL.DEBUG,
+    // LOGGER_LEVEL.HTTP,
+    // LOGGER_LEVEL.VERBOSE,
+    // LOGGER_LEVEL.SILLY,
+]);
 
-logger.info('Server started');
-logger.debug('Debug message');
-logger.error('Something went wrong!');
+logger.error(null, 'TEST ERROR', { message: 'TEST ERROR' });
+logger.warn(null, 'TEST WARN', { message: 'TEST WARN' });
+logger.info(null, 'TEST INFO', { message: 'TEST INFO' });
+logger.debug(null, 'TEST DEBUG', { message: 'TEST DEBUG' });
+logger.verbose(null, 'TEST VERBOSE', { message: 'TEST VERBOSE' });
+logger.http(null, 'TEST HTTP', { message: 'TEST HTTP' });
+logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
 ```
 
 ---
 
-## ⚙️ הגדרת משתני סביבה
+## ⚙️ Environment Variable
 
 | משתנה                   | תיאור                                        | ערך לדוגמה                          |
 |-------------------------|-----------------------------------------------|-------------------------------------|
@@ -65,29 +70,54 @@ logger.error('Something went wrong!');
 
 ---
 
-## 📊 חיבור ל־Seq
+## 📊 Seq
 
 [Seq](https://datalust.co/seq) הוא כלי לניטור לוגים עם UI עשיר.
 
 ### Docker Compose
 
 ```yaml
-<!-- seq:start -->
-<!-- seq:end -->
+version: '3.9'
+
+volumes:
+  seq-data: {}
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  admin-logger:
+    image: datalust/seq:latest
+    container_name: admin-logger
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINUSERNAME=${LOGGING_USERNAME:-admin}
+      - SEQ_FIRSTRUN_ADMINPASSWORD=${LOGGING_PASSWORD:-admin}
+    volumes:
+      - seq-data:/data  # Volume to persist Seq data
+    ports:
+      - ${LOGGING_PORT:-5341}:80
+    networks:
+      - app-network
+```
+
+```bash
+  docker-compose up -d
 ```
 
 ### דוגמה לשימוש
 
 ```env
-SEQ_URL=http://localhost:5341
-SEQ_API_KEY=your-api-key
+    SEQ_URL=http://localhost:5341
+    SEQ_API_KEY=your-api-key
 ```
 
 🎥 סרטון הסבר קצר: [https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK](https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK)
 
 ---
 
-## ☁️ חיבור ל־AWS CloudWatch
+## ☁️ AWS CloudWatch
 
 החבילה תומכת בשליחת לוגים גם ל־CloudWatch — בין אם מדובר בשירות רגיל או Lambda.
 
@@ -102,15 +132,6 @@ IS_LAMBDA=true
 
 ---
 
-## 📄 טייפים מובנים
-
-```ts
-// import { LOGGER_LEVEL, type LoggerLevel } from 'traced-logger';
-<!-- example:start -->
-<!-- example:end -->
-```
-
----
 
 ## 🧪 תרומות
 
@@ -118,6 +139,6 @@ IS_LAMBDA=true
 
 ---
 
-## 📜 רישיון
+## 📜 License
 
 MIT License
