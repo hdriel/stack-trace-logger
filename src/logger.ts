@@ -18,16 +18,17 @@ import {
     LOGGING_LINE_TRACE,
     LOCAL_LOGS_DIR_PATH,
 } from './environment-variables';
-import { LOGGER_LEVEL, LoggerLevelType, REQUEST_ID } from './consts';
+import { LOGGER_LEVEL, LoggerLevelType, REQUEST_ID, TRANSPORT, TransportType } from './consts';
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'path';
 
 export class Logger {
-    private readonly logger;
+    private readonly logger: LoggerType;
+    private transportByType: Record<TransportType, Transport> = {} as Record<TransportType, Transport>;
 
     constructor(
         private readonly serviceName: string = SERVICE_NAME || 'UNDEFINED',
-        private _loggingModeLevel: LoggerLevelType = (LOGGING_MODE as LoggerLevelType) ?? LOGGER_LEVEL.WARN,
+        private _loggingModeLevel: LoggerLevelType = LOGGING_MODE ?? LOGGER_LEVEL.WARN,
         private readonly lineTraceLevels: LoggerLevelType[] = LOGGING_LINE_TRACE
     ) {
         this.logger = createLogger({
@@ -38,35 +39,47 @@ export class Logger {
                 format.json(),
                 format.printf(localMessageFormatter)
             ),
-        });
-        this.logger.clear().add(new transports.Console());
+        }).clear();
+
+        const consoleTransport = new transports.Console();
+        this.logger.add(consoleTransport);
+        this.transportByType[TRANSPORT.CONSOLE] = consoleTransport;
 
         if ((RUN_LOCALLY || NODE_ENV !== 'production') && LOCAL_LOGS_DIR_PATH) {
-            const fileOptions: DailyRotateFileTransportOptions = {
-                dirname: path.resolve(LOCAL_LOGS_DIR_PATH),
-                filename: `${this.serviceName}-%DATE%.log`,
-                datePattern: 'YYYY-MM-DD-HH',
-                zippedArchive: true,
-                maxSize: '20m',
-                maxFiles: '14d',
-            };
+            {
+                const fileOptions: DailyRotateFileTransportOptions = {
+                    dirname: path.resolve(LOCAL_LOGS_DIR_PATH),
+                    filename: `${this.serviceName}-%DATE%.log`,
+                    datePattern: 'YYYY-MM-DD-HH',
+                    zippedArchive: true,
+                    maxSize: '20m',
+                    maxFiles: '14d',
+                };
+                const dailyRotateFileTransport = new DailyRotateFile(fileOptions);
+                this.logger.add(dailyRotateFileTransport);
+                this.transportByType[TRANSPORT.FILE] = dailyRotateFileTransport;
+                console.log('DailyRotateFile winston logger extension Added for all levels', fileOptions);
+            }
 
-            // @ts-ignore
-            this.logger.add(new DailyRotateFile(fileOptions));
-            console.log('DailyRotateFile winston logger extension Added', fileOptions);
+            {
+                const fileErrorOptions: DailyRotateFileTransportOptions = {
+                    level: LOGGER_LEVEL.ERROR,
+                    dirname: path.resolve(LOCAL_LOGS_DIR_PATH),
+                    filename: `${this.serviceName}-%DATE%.log`,
+                    datePattern: 'YYYY-MM-DD-HH',
+                    zippedArchive: true,
+                    maxSize: '10m',
+                    maxFiles: '7d',
+                };
 
-            const fileErrorOptions: DailyRotateFileTransportOptions = {
-                level: LOGGER_LEVEL.ERROR,
-                dirname: path.resolve(LOCAL_LOGS_DIR_PATH),
-                filename: `${this.serviceName}-%DATE%.log`,
-                datePattern: 'YYYY-MM-DD-HH',
-                zippedArchive: true,
-                maxSize: '10m',
-                maxFiles: '7d',
-            };
-
-            // @ts-ignore
-            this.logger.add(new DailyRotateFile(fileErrorOptions));
+                const dailyRotateFileTransport = new DailyRotateFile(fileErrorOptions);
+                this.logger.add(dailyRotateFileTransport);
+                this.transportByType[TRANSPORT.FILE_ERROR] = dailyRotateFileTransport;
+                console.log(
+                    `DailyRotateFile winston logger extension Added for '${LOGGER_LEVEL.ERROR}' levels`,
+                    fileErrorOptions
+                );
+            }
         }
 
         if (SEQ_OPTIONS) {
@@ -78,7 +91,9 @@ export class Logger {
                 handleRejections: true,
             };
 
-            this.logger.add(new SeqTransport(seqOptions));
+            const seqTransport = new SeqTransport(seqOptions);
+            this.logger.add(seqTransport);
+            this.transportByType[TRANSPORT.SEQ] = seqTransport;
             console.log('SEQ winston logger extension Added');
         }
 
@@ -93,7 +108,10 @@ export class Logger {
                     return CLOUDWATCH_OPTIONS?.logStreamName.replace('DATE', date) as string;
                 },
             };
-            this.logger.add(new CloudWatchTransport(cwOptions));
+
+            const cloudWatchTransport = new CloudWatchTransport(cwOptions);
+            this.logger.add(cloudWatchTransport);
+            this.transportByType[TRANSPORT.CLOUD_WATCH] = cloudWatchTransport;
             console.log('CloudWatch winston logger extension Added');
         }
 
@@ -105,12 +123,41 @@ export class Logger {
         this.logger[this.loggingModeLevel]?.('LOGGER', 'logger instance created', { lineTrace: true });
     }
 
-    addTransport(transport: Transport) {
-        this.logger.add(transport);
+    clearTransports() {
+        this.logger.clear();
+    }
+
+    addTransport(transport: TransportType | Transport) {
+        if (transport instanceof Transport) {
+            this.logger.add(transport);
+            return;
+        }
+
+        const buildInTransport = this.transportByType[transport as TransportType];
+        if (buildInTransport) this.logger.add(buildInTransport);
+    }
+
+    removeTransport(transport: TransportType | Transport) {
+        if (transport instanceof Transport) {
+            this.logger.remove(transport as Transport);
+            return;
+        }
+
+        const buildInTransport = this.transportByType[transport as TransportType];
+        if (buildInTransport) this.logger.remove(buildInTransport);
+    }
+
+    hasTransport(transport: TransportType) {
+        const buildInTransport = this.transportByType[transport as TransportType];
+        return !!buildInTransport;
     }
 
     get loggingModeLevel() {
         return this._loggingModeLevel;
+    }
+
+    get instance(): LoggerType {
+        return this.logger;
     }
 
     writeLog(level: LoggerLevelType, request_id: string, message: string, options: any = {}) {

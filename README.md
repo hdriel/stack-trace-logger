@@ -54,25 +54,86 @@ logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
 
 ---
 
-## ⚙️ Environment Variable
+# ⚙️ Environment Configuration for `traced-logger`
 
-| משתנה                   | תיאור                                        | ערך לדוגמה                          |
-|-------------------------|-----------------------------------------------|-------------------------------------|
-| `LOGGER_DIR_PATH`       | תיקייה מקומית לשמירת קובצי לוג               | `./logs`                            |
-| `SEQ_URL`               | כתובת של שרת Seq                              | `http://localhost:5341`            |
-| `SEQ_API_KEY`           | מפתח גישה ל־Seq (אם נדרש)                    | `your-seq-api-key`                 |
-| `CLOUDWATCH_GROUP_NAME` | שם קבוצת הלוגים ב־CloudWatch                  | `my-service-logs`                  |
-| `CLOUDWATCH_STREAM_NAME`| שם זרם הלוגים                                 | `instance-1`                       |
-| `AWS_REGION`            | אזור AWS שבו מופעל CloudWatch                | `us-east-1`                         |
-| `AWS_ACCESS_KEY_ID`     | מפתח גישה ל־AWS                               |                                     |
-| `AWS_SECRET_ACCESS_KEY` | סיסמת גישה ל־AWS                              |                                     |
-| `IS_LAMBDA`             | האם רץ בתוך Lambda (כדי לנהל CloudWatch אחרת)| `true` / `false`                   |
+This document lists and describes all `process.env` variables used by the `traced-logger` package.  
+Set these variables in your `.env` file or environment to control logging behavior, integrations, and runtime context.
 
 ---
 
-## 📊 Seq
+## 🧠 Base Configuration
 
-[Seq](https://datalust.co/seq) הוא כלי לניטור לוגים עם UI עשיר.
+| Variable          | Description                                      | Example            |
+|------------------|--------------------------------------------------|--------------------|
+| `NODE_ENV`       | Current environment mode                         | `local`, `test`, `production` |
+| `SERVICE_NAME`   | Name of the service for log tagging              | `SERVER`           |
+
+---
+
+## ✍ Logging Behavior
+
+| Variable              | Description                                                   | Example             |
+|----------------------|---------------------------------------------------------------|---------------------|
+| `LOGGING_MODE`       | Minimum log level to display                                   | `debug`, `info`     |
+| `LOGGING_LINE_TRACE` | Comma-separated levels that include line tracing in logs      | `error,info`        |
+
+---
+
+## 💾 Local File Logging
+
+| Variable                | Description                                      | Example     |
+|------------------------|--------------------------------------------------|-------------|
+| `RUN_LOCALLY`          | Whether to run logger locally (enables file logs)| `1`         |
+| `LOCAL_LOGS_DIR_PATH`  | Path to save log files                           | `./logs`    |
+
+---
+
+## 📡 Seq Integration
+
+| Variable           | Description                                | Example                    |
+|-------------------|--------------------------------------------|----------------------------|
+| `LOGGER_USE_SEQ`  | Enable Seq logging                          | `1`                        |
+| `LOGGING_KEY`     | Seq API key                                 | `BOVLE2HO7yVTHZ16rK7t`     |
+| `LOGGING_URL`     | Seq server URL                              | `http://localhost:5341`    |
+
+---
+
+## ☁️ AWS CloudWatch Integration
+
+| Variable                           | Description                                       | Example                |
+|-----------------------------------|---------------------------------------------------|------------------------|
+| `LOGGER_USE_CLOUDWATCH`          | Enable AWS CloudWatch logging                     | `1`                    |
+| `LOGGER_CLOUDWATCH_GROUP_NAME`   | CloudWatch log group name                         | `/ecs/my-service`      |
+| `LOGGER_CLOUDWATCH_STREAM_NAME`  | CloudWatch log stream name                        | `instance-logs`        |
+| `LOGGER_CLOUDWATCH_RETENTION_IN_DAYS` | Number of days to retain logs in CloudWatch  | `3`                    |
+| `AWS_ACCESS_KEY_ID`              | AWS access key ID                                 | `AKIA...`              |
+| `AWS_SECRET_ACCESS_KEY`          | AWS secret access key                             | `abc123...`            |
+| `AWS_REGION`                     | AWS region                                        | `us-east-1`            |
+| `REMOTION_AWS_ACCESS_KEY_ID`     | Used if not in AWS Lambda (fallback key)          | `AKIA...`              |
+| `REMOTION_AWS_SECRET_ACCESS_KEY` | Used if not in AWS Lambda (fallback secret)       | `abc123...`            |
+| `REMOTION_AWS_REGION`            | Used if not in AWS Lambda                         | `us-east-1`            |
+
+---
+
+## 🔁 Serverless / Lambda Runtime Detection
+
+| Variable                    | Description                                                  | Example    |
+|----------------------------|--------------------------------------------------------------|------------|
+| `IS_RUNNING_ON_SERVERLESS` | Explicit flag for Serverless environment                     | `true`     |
+| `AWS_LAMBDA_FUNCTION_NAME` | Automatically set by AWS Lambda environment                  | (auto)     |
+| `IS_OFFLINE`               | Used to detect Serverless Offline mode                       | `1` or `true` |
+
+---
+
+## ✅ Notes
+
+- **Fallbacks:** When running locally, credentials fall back to `REMOTION_*` keys.
+- **Lambda mode:** Auto-detected by presence of `AWS_LAMBDA_FUNCTION_NAME`, unless `IS_OFFLINE` is set.
+- **Line trace levels:** Must match defined levels in `LOGGER_LEVEL`.
+
+---
+
+## 📊 [Seq](https://datalust.co/seq)
 
 ### Docker Compose
 
@@ -106,36 +167,21 @@ services:
   docker-compose up -d
 ```
 
-### דוגמה לשימוש
+## Seq usage
 
 ```env
     SEQ_URL=http://localhost:5341
     SEQ_API_KEY=your-api-key
 ```
 
-🎥 סרטון הסבר קצר: [https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK](https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK)
+🎥 Demo: [https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK](https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK)
 
 ---
 
-## ☁️ AWS CloudWatch
+## 🧪 Contributions
 
-החבילה תומכת בשליחת לוגים גם ל־CloudWatch — בין אם מדובר בשירות רגיל או Lambda.
-
-### במקרים של Lambda
-
-יש להגדיר את:
-```env
-IS_LAMBDA=true
-```
-
-החבילה תזהה ותתאים את עצמה לשם זרם ייחודי עבור כל ריצה (`AWS_LAMBDA_LOG_STREAM_NAME`).
-
----
-
-
-## 🧪 תרומות
-
-מרגישים שיש מה לשפר? מוזמנים לשלוח Pull Request או לפתוח Issue.
+Contributions are welcome!
+Feel free to open an issue or submit a pull request to help improve the project.
 
 ---
 
