@@ -31,10 +31,10 @@ const logger = new Logger('UNIT_TEST', LOGGER_LEVEL.SILLY, [
     LOGGER_LEVEL.ERROR,
     LOGGER_LEVEL.WARN,
     LOGGER_LEVEL.INFO,
-    // LOGGER_LEVEL.DEBUG,
-    // LOGGER_LEVEL.HTTP,
-    // LOGGER_LEVEL.VERBOSE,
-    // LOGGER_LEVEL.SILLY,
+    LOGGER_LEVEL.DEBUG,
+    LOGGER_LEVEL.HTTP,
+    LOGGER_LEVEL.VERBOSE,
+    LOGGER_LEVEL.SILLY,
 ]);
 
 logger.error(null, 'TEST ERROR', { message: 'TEST ERROR' });
@@ -45,6 +45,8 @@ logger.verbose(null, 'TEST VERBOSE', { message: 'TEST VERBOSE' });
 logger.http(null, 'TEST HTTP', { message: 'TEST HTTP' });
 logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
 ```
+
+![Logger Diagram](./logger-output.webp)
 
 ---
 

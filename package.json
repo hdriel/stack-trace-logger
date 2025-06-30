@@ -56,7 +56,6 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.4",
     "@types/uuid": "^10.0.0",
-    "@types/winston": "^2.4.4",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-prettier": "^10.1.5",
