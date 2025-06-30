@@ -1,19 +1,13 @@
 # traced-logger
 
-### A lightweight logger with color and trace support.
-
+[//]: # (### A lightweight logger with color and trace support.)
+### A smart logger with tracing line, log level control, integrations with AWS CloudWatch and Seq, colorized and file logging.
 
 ## 📦 Installing
 
 ```bash
     npm install traced-logger
 ```
-
-# traced-logger
-
-📦 A smart logger with tracing line, log level control, integrations with AWS CloudWatch and Seq, colorized and file logging.
-
----
 
 ## ✨ Key Features
 
