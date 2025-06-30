@@ -46,7 +46,7 @@ logger.http(null, 'TEST HTTP', { message: 'TEST HTTP' });
 logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
 ```
 
-![Logger Diagram](./logger-output.webp)
+![Logger Diagram](logger-output.webp)
 
 ---
 
