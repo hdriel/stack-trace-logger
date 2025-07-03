@@ -170,7 +170,7 @@ services:
     SEQ_API_KEY=your-api-key
 ```
 
-🎥 Demo: [https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK](https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK)
+🎥 Demo: [https://youtu.be/5cKcnRtco44](https://www.youtube.com/watch?v=SEQ_TUTORIAL_LINK)
 
 ---
 
