@@ -58,7 +58,7 @@ export const cloudWatchMessageFormatter = ({
     message,
     ...metadata
 }: LogEntry | PRINTF): string => {
-    return `[${level}] [reqId: ${request_id}] ${message} | ${stringifyMetaData(metadata)}`;
+    return `[${level}] [reqId: ${request_id}] ${message} | ${stringifyMetaData(metadata)}`.replace(/\n/g, '\r');
 };
 
 export const getLineTrace = (error: Error) => {

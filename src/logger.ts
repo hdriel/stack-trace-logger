@@ -178,13 +178,20 @@ export class Logger {
         if (lineTrace) options.line_trace = lineTrace;
 
         // serverless logs got correctly from console
-        if (IS_RUNNING_ON_SERVERLESS) {
-            // @ts-ignore
-            (console[level] ?? console.log)(level, message, { request_id, ...options });
-            return;
-        }
+        if (IS_RUNNING_ON_SERVERLESS || (!RUN_LOCALLY && CLOUDWATCH_OPTIONS)) {
+            const line = cloudWatchMessageFormatter({
+                level,
+                message,
+                request_id,
+                timestamp: new Date().toISOString(),
+                ...options,
+            });
 
-        this.logger.log(level, message, { request_id, ...options });
+            // @ts-ignore
+            (console[level] ?? console.log)(line);
+        } else {
+            this.logger.log(level, message, { request_id, ...options });
+        }
     }
 
     error(request_id: string | null, message: any, metadata: any = {}) {
