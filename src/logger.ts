@@ -13,7 +13,6 @@ import {
     SEQ_OPTIONS,
     CLOUDWATCH_OPTIONS,
     SERVICE_NAME,
-    IS_RUNNING_ON_SERVERLESS,
     RUN_LOCALLY,
     LOGGING_LINE_TRACE,
     LOCAL_LOGS_DIR_PATH,
@@ -29,7 +28,8 @@ export class Logger {
     constructor(
         private readonly serviceName: string = SERVICE_NAME || 'UNDEFINED',
         private _loggingModeLevel: LoggerLevelType = LOGGING_MODE ?? LOGGER_LEVEL.WARN,
-        private readonly lineTraceLevels: LoggerLevelType[] = LOGGING_LINE_TRACE
+        private readonly lineTraceLevels: LoggerLevelType[] = LOGGING_LINE_TRACE,
+        private readonly tagProps: string[] = ['reqId']
     ) {
         this.logger = createLogger({
             level: this.loggingModeLevel,
@@ -37,7 +37,7 @@ export class Logger {
                 format.timestamp(),
                 format.errors({ stack: true }),
                 format.json(),
-                format.printf(localMessageFormatter)
+                format.printf((props) => localMessageFormatter(props, this.tagProps))
             ),
         }).clear();
 
@@ -102,7 +102,7 @@ export class Logger {
             const cwOptions: CloudwatchTransportOptions = {
                 ...CLOUDWATCH_OPTIONS,
                 name: `${this.serviceName}-LOGS`,
-                messageFormatter: cloudWatchMessageFormatter,
+                messageFormatter: (props) => cloudWatchMessageFormatter(props, this.tagProps),
                 logStreamName: function () {
                     const date = new Date().toISOString().split('T')[0];
                     return CLOUDWATCH_OPTIONS?.logStreamName.replace('DATE', date) as string;
@@ -160,12 +160,12 @@ export class Logger {
         return this.logger;
     }
 
-    writeLog(level: LoggerLevelType, request_id: string, message: string, options: any = {}) {
+    writeLog(level: LoggerLevelType, reqId: string, message: string, options: any = {}) {
         options = JSON.parse(JSON.stringify(options));
         options.service_name = this.serviceName;
 
         if (options?.hasOwnProperty('message')) {
-            // I dont remember why i force to put $message instead of message
+            // I don't remember why i force to put $message instead of message
             options.$message = options.message;
             delete options.message;
         }
@@ -178,11 +178,11 @@ export class Logger {
         if (lineTrace) options.line_trace = lineTrace;
 
         // serverless logs got correctly from console
-        if (IS_RUNNING_ON_SERVERLESS || (!RUN_LOCALLY && CLOUDWATCH_OPTIONS)) {
+        if (!RUN_LOCALLY) {
             const line = cloudWatchMessageFormatter({
                 level,
                 message,
-                request_id,
+                reqId,
                 timestamp: new Date().toISOString(),
                 ...options,
             });
@@ -190,36 +190,36 @@ export class Logger {
             // @ts-ignore
             (console[level] ?? console.log)(line);
         } else {
-            this.logger.log(level, message, { request_id, ...options });
+            this.logger.log(level, message, { reqId, ...options });
         }
     }
 
-    error(request_id: string | null, message: any, metadata: any = {}) {
-        this.writeLog(LOGGER_LEVEL.ERROR, request_id || REQUEST_ID, message, metadata);
+    error(reqId: string | null, message: any, metadata: any = {}) {
+        this.writeLog(LOGGER_LEVEL.ERROR, reqId || REQUEST_ID, message, metadata);
     }
 
-    warn(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.WARN, request_id || REQUEST_ID, message, metadata);
+    warn(reqId: string | null, message: any, metadata = {}) {
+        this.writeLog(LOGGER_LEVEL.WARN, reqId || REQUEST_ID, message, metadata);
     }
 
-    info(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.INFO, request_id || REQUEST_ID, message, metadata);
+    info(reqId: string | null, message: any, metadata = {}) {
+        this.writeLog(LOGGER_LEVEL.INFO, reqId || REQUEST_ID, message, metadata);
     }
 
-    debug(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.DEBUG, request_id || REQUEST_ID, message, metadata);
+    debug(reqId: string | null, message: any, metadata = {}) {
+        this.writeLog(LOGGER_LEVEL.DEBUG, reqId || REQUEST_ID, message, metadata);
     }
 
-    verbose(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.VERBOSE, request_id || REQUEST_ID, message, metadata);
+    verbose(reqId: string | null, message: any, metadata = {}) {
+        this.writeLog(LOGGER_LEVEL.VERBOSE, reqId || REQUEST_ID, message, metadata);
     }
 
-    http(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.HTTP, request_id || REQUEST_ID, message, metadata);
+    http(reqId: string | null, message: any, metadata = {}) {
+        this.writeLog(LOGGER_LEVEL.HTTP, reqId || REQUEST_ID, message, metadata);
     }
 
-    silly(request_id: string | null, message: any, metadata = {}) {
-        this.writeLog(LOGGER_LEVEL.SILLY, request_id || REQUEST_ID, message, metadata);
+    silly(reqId: string | null, message: any, metadata = {}) {
+        this.writeLog(LOGGER_LEVEL.SILLY, reqId || REQUEST_ID, message, metadata);
     }
 
     child(options: Record<string, any>): LoggerType {

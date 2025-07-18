@@ -1,5 +1,5 @@
 import { format, LogEntry, Logform } from 'winston';
-import { NODE_ENV, IS_RUNNING_ON_SERVERLESS } from './environment-variables';
+import { NODE_ENV, RUN_LOCALLY } from './environment-variables';
 import { LoggerLevelType } from './consts';
 
 interface PRINTF {
@@ -32,46 +32,70 @@ export function stringifyMetaData(metadata: string | object = '') {
 }
 
 // @ts-ignore
-export const localMessageFormatter = ({
-    timestamp,
-    level,
-    request_id,
-    $message: message,
-    message: _message,
-    ...metadata
-}: Logform.TransformableInfo | PRINTF): string => {
-    if (IS_RUNNING_ON_SERVERLESS) {
-        // https://www.brcline.com/blog/aws-lambda-logging-best-practices
-        return `[${level}] [reqId: ${request_id}] ${message || _message} | ${stringifyMetaData(metadata)}`;
+export const localMessageFormatter = (
+    { timestamp, level, $message: message, message: _message, ...metadata }: Logform.TransformableInfo | PRINTF,
+    tagProps: string[] = []
+): string => {
+    const output = [
+        `[${level}]`,
+        ...tagProps
+            .filter((tag) => metadata[tag.replace('?', '')] || !tag.endsWith('?'))
+            .map((_tag) => {
+                const tag = _tag.replace('?', '');
+                return `[${tag}: ${metadata[tag]}]`;
+            }),
+        message || _message,
+        '|',
+        `${stringifyMetaData(metadata)}`,
+    ]
+        .filter((v) => !!v)
+        .join(' ');
+
+    if (RUN_LOCALLY) {
+        return colorizer.colorize(level, `${timestamp} ${output}\n`);
     }
 
-    return colorizer.colorize(
-        level,
-        `${timestamp} [${level}] [${request_id}] ${message || _message} ${stringifyMetaData(metadata)}\n`
-    );
+    // https://www.brcline.com/blog/aws-lambda-logging-best-practices
+    return output;
 };
 
-export const cloudWatchMessageFormatter = ({
-    timestamp,
-    level,
-    request_id,
-    message,
-    ...metadata
-}: LogEntry | PRINTF): string => {
-    return `[${level}] [reqId: ${request_id}] ${message} | ${stringifyMetaData(metadata)}`.replace(/\n/g, '\r');
+export const cloudWatchMessageFormatter = (
+    { timestamp, level, message, ...metadata }: LogEntry | PRINTF,
+    tagProps: string[] = []
+): string => {
+    return [
+        `[${level}]`,
+        ...tagProps
+            .filter((tag) => !tag.endsWith('?') && metadata[tag.replace('?', '')])
+            .map((_tag) => {
+                const tag = _tag.replace('?', '');
+                return `[${tag}: ${metadata[tag]}]`;
+            }),
+        message,
+        '|',
+        `${stringifyMetaData(metadata)}`,
+    ]
+        .filter((v) => !!v)
+        .join(' ')
+        .replace(/\n/g, '\r');
 };
 
 export const getLineTrace = (error: Error) => {
     const lineTraces = error?.stack?.split('\n').filter((line) => !/\\logger\.[jt]s:\d+:\d+\),?$/.test(line)) || [];
+    // todo: consider to get count of lines for the stack trace like 2 previous line
+    let lineCounter = 1;
 
+    const lines: string[] = [];
     let lineTrace = lineTraces[1];
     for (const line of lineTraces.slice(1)) {
         const isLoggerFile = /[lL]ogger\.[tj]s:\d+:\d+\)$/.test(line.trim());
         if (!isLoggerFile) {
             lineTrace = line;
-            break;
+            lines.push(lineTrace);
+            lineCounter--;
+            if (!lineCounter) break;
         }
     }
 
-    return lineTrace.trimStart();
+    return lines.join('\n\r\t\t').trimStart();
 };
