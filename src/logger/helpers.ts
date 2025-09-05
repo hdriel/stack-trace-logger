@@ -1,6 +1,7 @@
-import { format, Logform,type LogEntry } from 'winston';
-import { NODE_ENV, RUN_LOCALLY } from './environment-variables';
+import { format, type LogEntry } from 'winston';
+import { NODE_ENV } from './environment-variables';
 import type { LoggerLevelType } from './consts';
+import type { TransformableInfo } from 'logform';
 
 interface PRINTF {
     request_id: string;
@@ -31,9 +32,15 @@ export function stringifyMetaData(metadata: string | object = '') {
         : '';
 }
 
-// @ts-ignore
 export const localMessageFormatter = (
-    { timestamp, level, $message: message, message: _message, ...metadata }: Logform.TransformableInfo | PRINTF,
+    {
+        colorize: colorize,
+        timestamp,
+        level,
+        $message: message,
+        message: _message,
+        ...metadata
+    }: TransformableInfo | PRINTF,
     tagProps: string[] = []
 ): string => {
     const output = [
@@ -51,7 +58,7 @@ export const localMessageFormatter = (
         .filter((v) => !!v)
         .join(' ');
 
-    if (RUN_LOCALLY) {
+    if (colorize) {
         return colorizer.colorize(level, `${timestamp} ${output}\n`);
     }
 

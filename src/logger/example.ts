@@ -3,15 +3,19 @@ import Logger, { LOGGER_LEVEL } from './index';
 console.log('Hello World');
 
 DEFAULT_USE: {
-    const logger = new Logger('UNIT_TEST', LOGGER_LEVEL.SILLY, [
-        LOGGER_LEVEL.ERROR,
-        LOGGER_LEVEL.WARN,
-        LOGGER_LEVEL.INFO,
-        LOGGER_LEVEL.DEBUG,
-        LOGGER_LEVEL.HTTP,
-        LOGGER_LEVEL.VERBOSE,
-        LOGGER_LEVEL.SILLY,
-    ]);
+    const logger = new Logger({
+        serviceName: 'UNIT_TEST',
+        loggingModeLevel: LOGGER_LEVEL.SILLY,
+        lineTraceLevels: [
+            LOGGER_LEVEL.ERROR,
+            LOGGER_LEVEL.WARN,
+            LOGGER_LEVEL.INFO,
+            LOGGER_LEVEL.DEBUG,
+            LOGGER_LEVEL.HTTP,
+            LOGGER_LEVEL.VERBOSE,
+            LOGGER_LEVEL.SILLY,
+        ],
+    });
 
     logger.error(null, 'TEST ERROR', { message: 'TEST ERROR' });
     logger.warn(null, 'TEST WARN', { message: 'TEST WARN' });
@@ -23,10 +27,10 @@ DEFAULT_USE: {
 }
 
 TAG_PROPS: {
-    const logger = new Logger(
-        'UNIT_TEST',
-        LOGGER_LEVEL.SILLY,
-        [
+    const logger = new Logger({
+        serviceName: 'UNIT_TEST',
+        loggingModeLevel: LOGGER_LEVEL.SILLY,
+        lineTraceLevels: [
             LOGGER_LEVEL.ERROR,
             LOGGER_LEVEL.WARN,
             LOGGER_LEVEL.INFO,
@@ -35,8 +39,8 @@ TAG_PROPS: {
             LOGGER_LEVEL.VERBOSE,
             LOGGER_LEVEL.SILLY,
         ],
-        ['reqId', 'userId?', 'project']
-    );
+        tags: ['reqId', 'userId?', 'project'],
+    });
 
     const reqId = '0000-000-000-0000';
     logger.error(reqId, 'TEST ERROR', { message: 'TEST ERROR', userId: '1111', project: 'AAA' });

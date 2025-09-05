@@ -1,3 +1,3 @@
 import { Logger } from './logger';
-export { LOGGER_LEVEL } from './consts';
+export { LOGGER_LEVEL, type LoggerLevelType } from './consts';
 export default Logger;
