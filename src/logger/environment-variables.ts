@@ -1,5 +1,5 @@
 import './dotenv';
-import { LEVELS, LOGGER_LEVEL, LoggerLevelType } from './consts';
+import { LEVELS, LOGGER_LEVEL, type LoggerLevelType } from './consts';
 
 export const NODE_ENV = process.env.NODE_ENV || 'local';
 export const SERVICE_NAME = process.env.SERVICE_NAME || 'SERVER';

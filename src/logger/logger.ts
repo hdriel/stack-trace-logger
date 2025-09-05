@@ -1,43 +1,55 @@
 import { createLogger, format, transports, Logger as LoggerType } from 'winston';
 import Transport from 'winston-transport';
-import CloudWatchTransport, { CloudwatchTransportOptions } from 'winston-cloudwatch';
-import DailyRotateFile, { DailyRotateFileTransportOptions } from 'winston-daily-rotate-file';
+import CloudWatchTransport, { type CloudwatchTransportOptions } from 'winston-cloudwatch';
+import DailyRotateFile, { type DailyRotateFileTransportOptions } from 'winston-daily-rotate-file';
 
 // NOTICE: Using version 2.x.x cause to:
 // seq-logging@3.0.1 THROW ERROR: Top-level await is currently not supported with the "cjs" output format
 import { SeqTransport } from '@datalust/winston-seq';
 
 import {
-    LOGGING_MODE,
     NODE_ENV,
     SEQ_OPTIONS,
     CLOUDWATCH_OPTIONS,
     SERVICE_NAME,
     RUN_LOCALLY,
-    LOGGING_LINE_TRACE,
     LOCAL_LOGS_DIR_PATH,
 } from './environment-variables';
-import { LOGGER_LEVEL, LoggerLevelType, REQUEST_ID, TRANSPORT, TransportType } from './consts';
+import { LOGGER_LEVEL, type LoggerLevelType, REQUEST_ID, TRANSPORT } from './consts';
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'path';
 
 export class Logger {
     private readonly logger: LoggerType;
-    private transportByType: Record<TransportType, Transport> = {} as Record<TransportType, Transport>;
+    private readonly serviceName: string;
+    private readonly _loggingModeLevel: LoggerLevelType;
+    private readonly lineTraceLevels: LoggerLevelType[];
+    private readonly tags: string[];
+    private transportByType: Record<TRANSPORT, Transport> = {} as Record<TRANSPORT, Transport>;
 
-    constructor(
-        private readonly serviceName: string = SERVICE_NAME || 'UNDEFINED',
-        private _loggingModeLevel: LoggerLevelType = LOGGING_MODE ?? LOGGER_LEVEL.WARN,
-        private readonly lineTraceLevels: LoggerLevelType[] = LOGGING_LINE_TRACE,
-        private readonly tagProps: string[] = ['reqId']
-    ) {
+    constructor({
+        serviceName = SERVICE_NAME || 'LOGGER',
+        loggingModeLevel = LOGGER_LEVEL.WARN,
+        lineTraceLevels = [LOGGER_LEVEL.ERROR],
+        tags = ['reqId'],
+    }: {
+        serviceName: string;
+        loggingModeLevel: LoggerLevelType;
+        lineTraceLevels: LoggerLevelType[];
+        tags: string[];
+    }) {
+        this.serviceName = serviceName;
+        this._loggingModeLevel = loggingModeLevel;
+        this.lineTraceLevels = lineTraceLevels;
+        this.tags = tags;
+
         this.logger = createLogger({
             level: this.loggingModeLevel,
             format: format.combine(
                 format.timestamp(),
                 format.errors({ stack: true }),
                 format.json(),
-                format.printf((props) => localMessageFormatter(props, this.tagProps))
+                format.printf((props) => localMessageFormatter(props, this.tags))
             ),
         }).clear();
 
@@ -102,7 +114,7 @@ export class Logger {
             const cwOptions: CloudwatchTransportOptions = {
                 ...CLOUDWATCH_OPTIONS,
                 name: `${this.serviceName}-LOGS`,
-                messageFormatter: (props) => cloudWatchMessageFormatter(props, this.tagProps),
+                messageFormatter: (props) => cloudWatchMessageFormatter(props, this.tags),
                 logStreamName: function () {
                     const date = new Date().toISOString().split('T')[0];
                     return CLOUDWATCH_OPTIONS?.logStreamName.replace('DATE', date) as string;
@@ -127,28 +139,28 @@ export class Logger {
         this.logger.clear();
     }
 
-    addTransport(transport: TransportType | Transport) {
+    addTransport(transport: TRANSPORT | Transport) {
         if (transport instanceof Transport) {
             this.logger.add(transport);
             return;
         }
 
-        const buildInTransport = this.transportByType[transport as TransportType];
+        const buildInTransport = this.transportByType[transport];
         if (buildInTransport) this.logger.add(buildInTransport);
     }
 
-    removeTransport(transport: TransportType | Transport) {
+    removeTransport(transport: TRANSPORT | Transport) {
         if (transport instanceof Transport) {
             this.logger.remove(transport as Transport);
             return;
         }
 
-        const buildInTransport = this.transportByType[transport as TransportType];
+        const buildInTransport = this.transportByType[transport];
         if (buildInTransport) this.logger.remove(buildInTransport);
     }
 
-    hasTransport(transport: TransportType) {
-        const buildInTransport = this.transportByType[transport as TransportType];
+    hasTransport(transport: TRANSPORT) {
+        const buildInTransport = this.transportByType[transport];
         return !!buildInTransport;
     }
 

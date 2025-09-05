@@ -1,6 +1,6 @@
-import { format, LogEntry, Logform } from 'winston';
+import { format, Logform,type LogEntry } from 'winston';
 import { NODE_ENV, RUN_LOCALLY } from './environment-variables';
-import { LoggerLevelType } from './consts';
+import type { LoggerLevelType } from './consts';
 
 interface PRINTF {
     request_id: string;
