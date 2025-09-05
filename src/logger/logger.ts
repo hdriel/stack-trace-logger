@@ -1,11 +1,10 @@
-import { createLogger, format, transports, Logger as LoggerType } from 'winston';
+import winston, { Logger as LoggerType } from 'winston';
 import Transport from 'winston-transport';
 import CloudWatchTransport, { type CloudwatchTransportOptions } from 'winston-cloudwatch';
 import DailyRotateFile, { type DailyRotateFileTransportOptions } from 'winston-daily-rotate-file';
 // NOTICE: Using version 2.x.x cause to:
 // seq-logging@3.0.1 THROW ERROR: Top-level await is currently not supported with the "cjs" output format
 import { SeqTransport } from '@datalust/winston-seq';
-import { RUN_LOCALLY } from './environment-variables';
 import { LOGGER_LEVEL, type LoggerLevelType, REQUEST_ID, TRANSPORT } from './consts';
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'pathe';
@@ -16,6 +15,7 @@ export class Logger {
     private readonly serviceName: string;
     private readonly _loggingModeLevel: LoggerLevelType;
     private readonly lineTraceLevels: LoggerLevelType[];
+    private readonly runLocally: boolean;
     private readonly tags: string[];
     private transportByType: Record<TRANSPORT, Transport> = {} as Record<TRANSPORT, Transport>;
 
@@ -28,7 +28,9 @@ export class Logger {
         transportCloudWatchOptions,
         transportDailyRotateFileOptions,
         transportDailyErrorRotateFileOptions,
-        transportConsole,
+        transportConsole = true,
+        defaultMetaData,
+        runLocally = !['production', 'prod', 'dev'].includes(process.env.NODE_ENV as string),
     }: {
         serviceName?: string;
         loggingModeLevel?: LoggerLevelType;
@@ -37,7 +39,9 @@ export class Logger {
         transportSeqOptions?: { serverUrl: string; apiKey: string };
         transportDailyRotateFileOptions?: Partial<DailyRotateFileTransportOptions>;
         transportDailyErrorRotateFileOptions?: Partial<DailyRotateFileTransportOptions>;
+        runLocally?: boolean;
         transportConsole?: boolean;
+        defaultMetaData?: Record<string, any>;
         transportCloudWatchOptions?: {
             logGroupName: string;
             logStreamName: string;
@@ -50,26 +54,31 @@ export class Logger {
         this.serviceName = serviceName;
         this._loggingModeLevel = loggingModeLevel;
         this.lineTraceLevels = lineTraceLevels;
+        this.runLocally = runLocally;
         this.tags = tags;
 
-        this.logger = createLogger({
-            level: this.loggingModeLevel,
-            format: format.combine(
-                format.timestamp(),
-                format.errors({ stack: true }),
-                format.json(),
-                format.printf((props) => localMessageFormatter({ ...props, colorize: true }, this.tags))
-            ),
-        }).clear();
+        this.logger = winston
+            .createLogger({
+                level: this.loggingModeLevel,
+                levels: winston.config.npm.levels,
+                defaultMeta: { ...defaultMetaData, serviceName },
+            })
+            .clear();
 
-        // if (transportConsole) {
-        const consoleTransport = new transports.Console();
-        this.logger.add(consoleTransport);
-        this.transportByType[TRANSPORT.CONSOLE] = consoleTransport;
-        // }
+        if (transportConsole) {
+            const consoleTransport = new winston.transports.Console({
+                format: winston.format.combine(
+                    winston.format.timestamp(),
+                    winston.format.errors({ stack: true }),
+                    winston.format.json(),
+                    winston.format.printf((props) => localMessageFormatter({ ...props, colorize: true }, this.tags))
+                ),
+            });
+            this.logger.add(consoleTransport);
+            this.transportByType[TRANSPORT.CONSOLE] = consoleTransport;
+        }
 
-        if (RUN_LOCALLY || transportDailyRotateFileOptions?.dirname) {
-            transportDailyRotateFileOptions ||= { dirname: ROOT_LOGS_PATH };
+        if (transportDailyRotateFileOptions?.dirname) {
             {
                 const fileOptions: DailyRotateFileTransportOptions = {
                     ...transportDailyRotateFileOptions,
@@ -86,30 +95,29 @@ export class Logger {
                 this.transportByType[TRANSPORT.FILE] = dailyRotateFileTransport;
                 console.log('DailyRotateFile winston logger extension Added for all levels', fileOptions);
             }
+        }
 
+        if (transportDailyErrorRotateFileOptions?.dirname) {
             {
-                if (transportDailyErrorRotateFileOptions) {
-                    const fileErrorOptions: DailyRotateFileTransportOptions = {
-                        ...transportDailyErrorRotateFileOptions,
-                        level: LOGGER_LEVEL.ERROR,
-                        dirname: path.resolve(transportDailyErrorRotateFileOptions.dirname ?? ROOT_LOGS_PATH),
-                        filename:
-                            transportDailyErrorRotateFileOptions.dirname ??
-                            `${this.serviceName}-error-level-%DATE%.log`,
-                        datePattern: transportDailyErrorRotateFileOptions.datePattern ?? 'YYYY-MM-DD-HH',
-                        zippedArchive: transportDailyErrorRotateFileOptions.zippedArchive ?? true,
-                        maxSize: transportDailyErrorRotateFileOptions.maxSize ?? '10m',
-                        maxFiles: transportDailyErrorRotateFileOptions.maxFiles ?? '7d',
-                    } as DailyRotateFileTransportOptions;
+                const fileErrorOptions: DailyRotateFileTransportOptions = {
+                    ...transportDailyErrorRotateFileOptions,
+                    level: LOGGER_LEVEL.ERROR,
+                    dirname: path.resolve(transportDailyErrorRotateFileOptions.dirname ?? ROOT_LOGS_PATH),
+                    filename:
+                        transportDailyErrorRotateFileOptions.dirname ?? `${this.serviceName}-error-level-%DATE%.log`,
+                    datePattern: transportDailyErrorRotateFileOptions.datePattern ?? 'YYYY-MM-DD-HH',
+                    zippedArchive: transportDailyErrorRotateFileOptions.zippedArchive ?? true,
+                    maxSize: transportDailyErrorRotateFileOptions.maxSize ?? '10m',
+                    maxFiles: transportDailyErrorRotateFileOptions.maxFiles ?? '7d',
+                } as DailyRotateFileTransportOptions;
 
-                    const dailyRotateFileTransport = new DailyRotateFile(fileErrorOptions);
-                    this.logger.add(dailyRotateFileTransport);
-                    this.transportByType[TRANSPORT.FILE_ERROR] = dailyRotateFileTransport;
-                    console.log(
-                        `DailyRotateFile winston logger extension Added for '${LOGGER_LEVEL.ERROR}' levels`,
-                        fileErrorOptions
-                    );
-                }
+                const dailyRotateFileTransport = new DailyRotateFile(fileErrorOptions);
+                this.logger.add(dailyRotateFileTransport);
+                this.transportByType[TRANSPORT.FILE_ERROR] = dailyRotateFileTransport;
+                console.log(
+                    `DailyRotateFile winston logger extension Added for '${LOGGER_LEVEL.ERROR}' levels`,
+                    fileErrorOptions
+                );
             }
         }
 
@@ -210,20 +218,20 @@ export class Logger {
         if (lineTrace) options.line_trace = lineTrace;
 
         // serverless logs got correctly from console
-        if (!RUN_LOCALLY) {
-            const line = cloudWatchMessageFormatter({
-                level,
-                message,
-                reqId,
-                timestamp: new Date().toISOString(),
-                ...options,
-            });
-
-            // @ts-ignore
-            (console[level] ?? console.log)(line);
-        } else {
-            this.logger.log(level, message, { reqId, ...options });
+        if (this.runLocally) {
+            return this.logger.log(level, message, { reqId, ...options });
         }
+
+        const line = cloudWatchMessageFormatter({
+            level,
+            message,
+            reqId,
+            timestamp: new Date().toISOString(),
+            ...options,
+        });
+
+        // @ts-ignore
+        (console[level] ?? console.log)(line);
     }
 
     error(reqId: string | null, message: any, metadata: any = {}) {
