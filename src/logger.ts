@@ -60,7 +60,7 @@ export class Logger {
             .createLogger({
                 level: this.loggingModeLevel,
                 levels: winston.config.npm.levels,
-                defaultMeta: { ...defaultMetaData, serviceName },
+                defaultMeta: { ...defaultMetaData },
             })
             .clear();
 
