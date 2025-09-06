@@ -7,7 +7,8 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "keywords": [
@@ -36,9 +37,10 @@
   },
   "scripts": {
     "build": "tsc && vite build",
+    "build222": "tsup src/index.ts --format esm,cjs --dts --out-dir dist",
     "format": "prettier --write .",
     "clean": "rimraf ./dist",
-    "yalc:publish": "pnpm run build && yalc publish --private --push"
+    "yalc:publish": "pnpm run build222 && yalc publish --private --push"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.835.0",
@@ -51,5 +53,5 @@
     "winston-daily-rotate-file": "^5.0.0",
     "winston-transport": "^4.9.0"
   },
-  "yalcSig": "7109179829ebe96e78d41dce23f5c3e4"
+  "yalcSig": "daa04aee528612cffb249cd1a7e0d35f"
 }

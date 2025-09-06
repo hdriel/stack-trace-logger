@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/example.ts",
+    "dev:cjs": "node src/example.cjs",
     "yalc:publish": "cd .. && npm run yalc:publish",
     "yalc:attach": "yalc add traced-logger",
     "yalc:detach": "yalc remove traced-logger"

@@ -1,13 +1,14 @@
 {
   "name": "traced-logger",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
   "type": "module",
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "keywords": [
@@ -35,7 +36,7 @@
     "url": "https://github.com/hdriel/st-logger/issues"
   },
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "tsup src/index.ts --format esm,cjs --dts --out-dir dist",
     "prepare": "husky install",
     "format": "prettier --write .",
     "clean": "rimraf ./dist",
