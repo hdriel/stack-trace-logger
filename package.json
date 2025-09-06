@@ -3,8 +3,8 @@
   "version": "2.0.0",
   "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
   "type": "module",
-  "main": "./dist/index.js",
   "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
   "exports": {
     ".": {
       "import": "./dist/index.js",
