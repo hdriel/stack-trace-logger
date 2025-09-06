@@ -5,6 +5,8 @@ console.log('Hello World');
 DEFAULT_USE: {
     const logger = new Logger({
         serviceName: 'UNIT_TEST',
+        // transportDailyRotateFileOptions: { dirname: '../logs' },
+        // transportSeqOptions: { serverUrl: 'https://localhost:5341', apiKey: 'xyz' },
         loggingModeLevel: LOGGER_LEVEL.SILLY,
         lineTraceLevels: [
             LOGGER_LEVEL.ERROR,
