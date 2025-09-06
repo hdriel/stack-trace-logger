@@ -5,10 +5,9 @@ import DailyRotateFile, { type DailyRotateFileTransportOptions } from 'winston-d
 // NOTICE: Using version 2.x.x cause to:
 // seq-logging@3.0.1 THROW ERROR: Top-level await is currently not supported with the "cjs" output format
 import { SeqTransport } from '@datalust/winston-seq';
-import { LOGGER_LEVEL, type LoggerLevelType, REQUEST_ID, TRANSPORT } from './consts';
+import { LOGGER_LEVEL, type LoggerLevelType, NODE_ENV, REQUEST_ID, TRANSPORT } from './consts';
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'pathe';
-import { ROOT_LOGS_PATH } from './paths.ts';
 
 export class Logger {
     private readonly logger: LoggerType;
@@ -30,7 +29,7 @@ export class Logger {
         transportDailyErrorRotateFileOptions,
         transportConsole = true,
         defaultMetaData,
-        runLocally = !['production', 'prod', 'dev'].includes(process.env.NODE_ENV as string),
+        runLocally = !['production', 'prod', 'dev'].includes(NODE_ENV),
     }: {
         serviceName?: string;
         loggingModeLevel?: LoggerLevelType;
@@ -79,22 +78,20 @@ export class Logger {
         }
 
         if (transportDailyRotateFileOptions?.dirname) {
-            {
-                const fileOptions: DailyRotateFileTransportOptions = {
-                    ...transportDailyRotateFileOptions,
-                    dirname: path.resolve(transportDailyRotateFileOptions.dirname as string),
-                    filename: transportDailyRotateFileOptions.filename || `${this.serviceName}-%DATE%.log`,
-                    datePattern: transportDailyRotateFileOptions.datePattern || 'YYYY-MM-DD-HH',
-                    zippedArchive: transportDailyRotateFileOptions.zippedArchive ?? true,
-                    maxSize: transportDailyRotateFileOptions.maxSize || '20m',
-                    maxFiles: transportDailyRotateFileOptions.maxFiles || '14d',
-                } as DailyRotateFileTransportOptions;
+            const fileOptions: DailyRotateFileTransportOptions = {
+                ...transportDailyRotateFileOptions,
+                dirname: path.resolve(transportDailyRotateFileOptions.dirname),
+                filename: transportDailyRotateFileOptions.filename || `${this.serviceName}-%DATE%.log`,
+                datePattern: transportDailyRotateFileOptions.datePattern || 'YYYY-MM-DD-HH',
+                zippedArchive: transportDailyRotateFileOptions.zippedArchive ?? true,
+                maxSize: transportDailyRotateFileOptions.maxSize || '20m',
+                maxFiles: transportDailyRotateFileOptions.maxFiles || '14d',
+            } as DailyRotateFileTransportOptions;
 
-                const dailyRotateFileTransport = new DailyRotateFile(fileOptions);
-                this.logger.add(dailyRotateFileTransport);
-                this.transportByType[TRANSPORT.FILE] = dailyRotateFileTransport;
-                console.log('DailyRotateFile winston logger extension Added for all levels', fileOptions);
-            }
+            const dailyRotateFileTransport = new DailyRotateFile(fileOptions);
+            this.logger.add(dailyRotateFileTransport);
+            this.transportByType[TRANSPORT.FILE] = dailyRotateFileTransport;
+            console.log('DailyRotateFile winston logger extension Added for all levels', fileOptions);
         }
 
         if (transportDailyErrorRotateFileOptions?.dirname) {
@@ -102,7 +99,7 @@ export class Logger {
                 const fileErrorOptions: DailyRotateFileTransportOptions = {
                     ...transportDailyErrorRotateFileOptions,
                     level: LOGGER_LEVEL.ERROR,
-                    dirname: path.resolve(transportDailyErrorRotateFileOptions.dirname ?? ROOT_LOGS_PATH),
+                    dirname: path.resolve(transportDailyErrorRotateFileOptions.dirname),
                     filename:
                         transportDailyErrorRotateFileOptions.dirname ?? `${this.serviceName}-error-level-%DATE%.log`,
                     datePattern: transportDailyErrorRotateFileOptions.datePattern ?? 'YYYY-MM-DD-HH',

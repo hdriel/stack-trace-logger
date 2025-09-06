@@ -3,5 +3,4 @@ node_modules/
 logs/
 *.log
 *.test.ts
-jest.config.ts
 tsconfig.json

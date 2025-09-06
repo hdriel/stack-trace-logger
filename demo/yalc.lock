@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "traced-logger": {
+      "signature": "b7d9ccc640922a80783d318069c22567",
+      "file": true
+    }
+  }
+}

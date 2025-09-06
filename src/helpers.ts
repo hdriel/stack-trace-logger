@@ -1,6 +1,5 @@
 import { format, type LogEntry } from 'winston';
-import { NODE_ENV } from './environment-variables';
-import type { LoggerLevelType } from './consts';
+import { type LoggerLevelType, NODE_ENV } from './consts';
 import type { TransformableInfo } from 'logform';
 
 interface PRINTF {

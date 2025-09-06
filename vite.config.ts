@@ -7,10 +7,10 @@ export default defineConfig({
     plugins: [dts({ insertTypesEntry: true })],
     build: {
         lib: {
-            entry: resolve(__dirname, 'src/logger/index.ts'),
+            entry: resolve(__dirname, 'src/index.ts'),
             name: 'logger',
             fileName: '[name]',
-            formats: ['es', 'cjs', 'umd'],
+            formats: ['es', 'umd'],
         },
     },
 });

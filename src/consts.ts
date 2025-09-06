@@ -2,15 +2,7 @@ import { NIL } from 'uuid';
 
 export const REQUEST_ID = NIL;
 
-// export const TRANSPORT = {
-//     CLOUD_WATCH: 'CLOUD_WATCH',
-//     SEQ: 'SEQ',
-//     FILE: 'FILE',
-//     FILE_ERROR: 'FILE_ERROR',
-//     CONSOLE: 'CONSOLE',
-// } as const;
-//
-// export type TransportType = (typeof TRANSPORT)[keyof typeof TRANSPORT];
+export const NODE_ENV = process.env.NODE_ENV || 'local';
 
 export enum TRANSPORT {
     CLOUD_WATCH = 'CLOUD_WATCH',
