@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx src/example.ts",
+    "dev:esm": "tsx src/example.esm.ts",
     "dev:cjs": "node src/example.cjs",
     "yalc:publish": "cd .. && npm run yalc:publish",
     "yalc:attach": "yalc add traced-logger",

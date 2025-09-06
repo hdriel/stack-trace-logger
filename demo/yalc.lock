@@ -2,7 +2,7 @@
   "version": "v1",
   "packages": {
     "traced-logger": {
-      "signature": "daa04aee528612cffb249cd1a7e0d35f",
+      "signature": "2dd769aa7f980b89bc877220d1cdcb16",
       "file": true
     }
   }

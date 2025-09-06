@@ -4,7 +4,7 @@ import CloudWatchTransport, { type CloudwatchTransportOptions } from 'winston-cl
 import DailyRotateFile, { type DailyRotateFileTransportOptions } from 'winston-daily-rotate-file';
 // NOTICE: Using version 2.x.x cause to:
 // seq-logging@3.0.1 THROW ERROR: Top-level await is currently not supported with the "cjs" output format
-// import { SeqTransport } from '@datalust/winston-seq';
+import { SeqTransport } from '@datalust/winston-seq';
 import { LOGGER_LEVEL, type LoggerLevelType, NODE_ENV, REQUEST_ID, TRANSPORT } from './consts';
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'pathe';
@@ -119,19 +119,19 @@ export class Logger {
         }
 
         if (transportSeqOptions?.apiKey) {
-            // const seqOptionsConfig = {
-            //     ...transportSeqOptions,
-            //     serverUrl: transportSeqOptions?.serverUrl,
-            //     apiKey: transportSeqOptions?.apiKey,
-            //     onError: console.error,
-            //     handleExceptions: true,
-            //     handleRejections: true,
-            // };
-            //
-            // const seqTransport = new SeqTransport(seqOptionsConfig);
-            // this.logger.add(seqTransport);
-            // this.transportByType[TRANSPORT.SEQ] = seqTransport;
-            // console.log('SEQ winston logger extension Added');
+            const seqOptionsConfig = {
+                ...transportSeqOptions,
+                serverUrl: transportSeqOptions?.serverUrl,
+                apiKey: transportSeqOptions?.apiKey,
+                onError: console.error,
+                handleExceptions: true,
+                handleRejections: true,
+            };
+
+            const seqTransport = new SeqTransport(seqOptionsConfig);
+            this.logger.add(seqTransport);
+            this.transportByType[TRANSPORT.SEQ] = seqTransport;
+            console.log('SEQ winston logger extension Added');
         }
 
         if (transportCloudWatchOptions) {

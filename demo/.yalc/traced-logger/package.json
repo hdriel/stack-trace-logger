@@ -1,6 +1,6 @@
 {
   "name": "traced-logger",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,11 +36,10 @@
     "url": "https://github.com/hdriel/st-logger/issues"
   },
   "scripts": {
-    "build": "tsc && vite build",
-    "build222": "tsup src/index.ts --format esm,cjs --dts --out-dir dist",
+    "build": "tsup src/index.ts --format esm,cjs --dts --out-dir dist",
     "format": "prettier --write .",
     "clean": "rimraf ./dist",
-    "yalc:publish": "pnpm run build222 && yalc publish --private --push"
+    "yalc:publish": "pnpm run build && yalc publish --private --push"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.835.0",
@@ -53,5 +52,5 @@
     "winston-daily-rotate-file": "^5.0.0",
     "winston-transport": "^4.9.0"
   },
-  "yalcSig": "daa04aee528612cffb249cd1a7e0d35f"
+  "yalcSig": "2dd769aa7f980b89bc877220d1cdcb16"
 }
