@@ -31,55 +31,59 @@ import Logger, { LOGGER_LEVEL } from 'traced-logger';
 ```typescript
 console.log('Hello World');
 
-const logger = new Logger({
-    serviceName: 'UNIT_TEST',
-    loggingModeLevel: LOGGER_LEVEL.SILLY,
-    lineTraceLevels: [
-        LOGGER_LEVEL.ERROR,
-        LOGGER_LEVEL.WARN,
-        LOGGER_LEVEL.INFO,
-        LOGGER_LEVEL.DEBUG,
-        LOGGER_LEVEL.HTTP,
-        LOGGER_LEVEL.VERBOSE,
-        LOGGER_LEVEL.SILLY,
-    ],
-});
+DEFAULT_USE: {
+    const logger = new Logger({
+        serviceName: 'UNIT_TEST',
+        lineTraceBack: 3, // print for each logs 3 last lines from the log call
+        // transportDailyRotateFileOptions: { dirname: '../logs' },
+        // transportSeqOptions: { serverUrl: 'https://localhost:5341', apiKey: 'xyz' },
+        loggingModeLevel: LOGGER_LEVEL.SILLY,
+        lineTraceLevels: [
+            LOGGER_LEVEL.ERROR,
+            LOGGER_LEVEL.WARN,
+            LOGGER_LEVEL.INFO,
+            LOGGER_LEVEL.DEBUG,
+            LOGGER_LEVEL.HTTP,
+            LOGGER_LEVEL.VERBOSE,
+            LOGGER_LEVEL.SILLY,
+        ],
+    });
 
-logger.error(null, 'TEST ERROR', { message: 'TEST ERROR' });
-logger.warn(null, 'TEST WARN', { message: 'TEST WARN' });
-logger.info(null, 'TEST INFO', { message: 'TEST INFO' });
-logger.debug(null, 'TEST DEBUG', { message: 'TEST DEBUG' });
-logger.verbose(null, 'TEST VERBOSE', { message: 'TEST VERBOSE' });
-logger.http(null, 'TEST HTTP', { message: 'TEST HTTP' });
-logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
+    logger.error(null, 'TEST ERROR', { message: 'TEST ERROR' });
+    logger.warn(null, 'TEST WARN', { message: 'TEST WARN' });
+    logger.info(null, 'TEST INFO', { message: 'TEST INFO', lineTraceBack: 2 }); // print 2 last callstack lines from the log call, instead default 3 as defined in constructor
+    logger.debug(null, 'TEST DEBUG', { message: 'TEST DEBUG', lineTraceBack: 1 }); // print 1 last callstack line from the log call, instead default 3 as defined in constructor
+    logger.verbose(null, 'TEST VERBOSE', { message: 'TEST VERBOSE' });
+    logger.http(null, 'TEST HTTP', { message: 'TEST HTTP' });
+    logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
+}
 
-const reqId = '0000-000-000-0000';
+TAG_PROPS: {
+    const logger = new Logger({
+        serviceName: 'UNIT_TEST',
+        loggingModeLevel: LOGGER_LEVEL.SILLY,
+        lineTraceLevels: [
+            LOGGER_LEVEL.ERROR,
+            LOGGER_LEVEL.WARN,
+            LOGGER_LEVEL.INFO,
+            LOGGER_LEVEL.DEBUG,
+            LOGGER_LEVEL.HTTP,
+            LOGGER_LEVEL.VERBOSE,
+            LOGGER_LEVEL.SILLY,
+        ],
+        lineTraceBack: { error: 3, info: 2, warn: 3 }, // print for error,warnning level logs 3 last lines, and for info level the 2 last callstack lines, rest log level for 1 last callstack line from the log call
+        tags: ['reqId', 'userId?', 'project'],
+    });
 
-const taggedLogger = new Logger({
-    serviceName: 'UNIT_TEST',
-    // transportDailyRotateFileOptions: { dirname: '../logs' },
-    // transportSeqOptions: { serverUrl: 'https://localhost:5341', apiKey: 'xyz' },
-    loggingModeLevel: LOGGER_LEVEL.SILLY,
-    lineTraceLevels: [
-        LOGGER_LEVEL.ERROR,
-        LOGGER_LEVEL.WARN,
-        LOGGER_LEVEL.INFO,
-        LOGGER_LEVEL.DEBUG,
-        LOGGER_LEVEL.HTTP,
-        LOGGER_LEVEL.VERBOSE,
-        LOGGER_LEVEL.SILLY,
-    ],
-    tags: ['reqId', 'userId?', 'project'],
-});
-
-taggedLogger.error(reqId, 'TEST ERROR', { message: 'TEST ERROR', userId: '1111', project: 'AAA' });
-taggedLogger.warn(reqId, 'TEST WARN', { message: 'TEST WARN', userId: '1111', project: 'AAA' });
-taggedLogger.info(reqId, 'TEST INFO', { message: 'TEST INFO', project: 'AAA' });
-taggedLogger.debug(reqId, 'TEST DEBUG', { message: 'TEST DEBUG', userId: '1111' });
-taggedLogger.verbose(reqId, 'TEST VERBOSE', { message: 'TEST VERBOSE', userId: '2222' });
-taggedLogger.http(reqId, 'TEST HTTP', { message: 'TEST HTTP', userId: '3333', project: 'AAA' });
-taggedLogger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' });
-
+    const reqId = '0000-000-000-0000';
+    logger.error(reqId, 'TEST ERROR', { message: 'TEST ERROR', userId: '1111', project: 'AAA', lineTraceBack: 1 }); // print 1 last callstack lines from the log call, instead default 3 as defined in constructor
+    logger.warn(reqId, 'TEST WARN', { message: 'TEST WARN', userId: '1111', project: 'AAA' });
+    logger.info(reqId, 'TEST INFO', { message: 'TEST INFO', project: 'AAA' });
+    logger.debug(reqId, 'TEST DEBUG', { message: 'TEST DEBUG', userId: '1111', lineTraceBack: 3 }); // print 3 last callstack lines from the log call, instead default 1 as undefined in constructor
+    logger.verbose(reqId, 'TEST VERBOSE', { message: 'TEST VERBOSE', userId: '2222' });
+    logger.http(reqId, 'TEST HTTP', { message: 'TEST HTTP', userId: '3333', project: 'AAA' });
+    logger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' });
+}
 ```
 
 ![Logger Output](logger-output.webp)
@@ -106,6 +110,7 @@ taggedLogger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' 
 | `serviceName`                  | Service name to tag logs                                                                        |
 | `loggingModeLevel`             | Minimum log level to output (based on `LOGGER_LEVEL`)                                           |
 | `lineTraceLevels`              | Array of levels for which to capture and attach line trace info                                 |
+| `lineTraceBack`                | **New!** Configure number of stack trace lines to include per log level. Can be a single number for all levels or a record specifying the depth per log level. |
 | `tags`                        | Array of tag keys to output with logs (e.g. request Id, user Id, project)                        |
 | `transportConsole`            | Enable or disable console logging (default `true`)                                              |
 | `transportDailyRotateFileOptions` | Options for daily rotating file logging (directory, filename pattern, max size, retention, etc.) |

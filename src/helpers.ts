@@ -86,15 +86,15 @@ export const cloudWatchMessageFormatter = (
         .replace(/\n/g, '\r');
 };
 
-export const getLineTrace = (error: Error) => {
-    const lineTraces = error?.stack?.split('\n').filter((line) => !/\\logger\.[jt]s:\d+:\d+\),?$/.test(line)) || [];
-    // todo: consider to get count of lines for the stack trace like 2 previous line
-    let lineCounter = 1;
+export const getLineTrace = (error: Error, lineCounter = 1) => {
+    const startLoggerFileLineRegex = /^\s*at Logger\./;
+    const lineTraces = error?.stack?.split('\n').filter((line) => !startLoggerFileLineRegex.test(line.trim())) || [];
 
     const lines: string[] = [];
     let lineTrace = lineTraces[1];
+
     for (const line of lineTraces.slice(1)) {
-        const isLoggerFile = /[lL]ogger\.[tj]s:\d+:\d+\)$/.test(line.trim());
+        const isLoggerFile = startLoggerFileLineRegex.test(line.trim());
         if (!isLoggerFile) {
             lineTrace = line;
             lines.push(lineTrace);

@@ -9,12 +9,15 @@ import { LOGGER_LEVEL, type LoggerLevelType, NODE_ENV, REQUEST_ID, TRANSPORT } f
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'pathe';
 
+type MetaDataOptionsType = { lineTraceBack?: number; [key: string]: any };
+
 export class Logger {
     private readonly logger: LoggerType;
     private readonly serviceName: string;
     private readonly _loggingModeLevel: LoggerLevelType;
     private readonly lineTraceLevels: LoggerLevelType[];
     private readonly runLocally: boolean;
+    private readonly lineTraceBack: number | Partial<Record<LoggerLevelType, number>>;
     private readonly tags: string[];
     private transportByType: Record<TRANSPORT, Transport> = {} as Record<TRANSPORT, Transport>;
 
@@ -29,6 +32,7 @@ export class Logger {
         transportDailyErrorRotateFileOptions,
         transportConsole = true,
         defaultMetaData,
+        lineTraceBack = 1,
         runLocally = !['production', 'prod', 'dev'].includes(NODE_ENV),
     }: {
         serviceName?: string;
@@ -40,6 +44,7 @@ export class Logger {
         transportDailyErrorRotateFileOptions?: Partial<DailyRotateFileTransportOptions>;
         runLocally?: boolean;
         transportConsole?: boolean;
+        lineTraceBack?: number | Partial<Record<LoggerLevelType, number>>;
         defaultMetaData?: Record<string, any>;
         transportCloudWatchOptions?: {
             logGroupName: string;
@@ -55,6 +60,7 @@ export class Logger {
         this.lineTraceLevels = lineTraceLevels;
         this.runLocally = runLocally;
         this.tags = tags;
+        this.lineTraceBack = lineTraceBack;
 
         this.logger = winston
             .createLogger({
@@ -197,7 +203,12 @@ export class Logger {
         return this.logger;
     }
 
-    writeLog(level: LoggerLevelType, reqId: string, message: string, options: any = {}) {
+    writeLog(
+        level: LoggerLevelType,
+        reqId: string,
+        message: string,
+        { lineTraceBack, ...options }: MetaDataOptionsType = {}
+    ) {
         options = JSON.parse(JSON.stringify(options));
         options.service_name = this.serviceName;
 
@@ -210,7 +221,12 @@ export class Logger {
         let lineTrace;
         if (this.lineTraceLevels.includes(level) || level === LOGGER_LEVEL.ERROR) {
             const error = new Error(message); // must make Error right here
-            lineTrace = getLineTrace(error);
+            const _lineTraceBack =
+                lineTraceBack ??
+                (typeof this.lineTraceBack === 'number' ? this.lineTraceBack : this.lineTraceBack?.[level]) ??
+                1;
+
+            lineTrace = getLineTrace(error, _lineTraceBack);
         }
         if (lineTrace) options.line_trace = lineTrace;
 
@@ -231,31 +247,31 @@ export class Logger {
         (console[level] ?? console.log)(line);
     }
 
-    error(reqId: string | null, message: any, metadata: any = {}) {
+    error(reqId: string | null, message: any, metadata: MetaDataOptionsType = {}) {
         this.writeLog(LOGGER_LEVEL.ERROR, reqId || REQUEST_ID, message, metadata);
     }
 
-    warn(reqId: string | null, message: any, metadata = {}) {
+    warn(reqId: string | null, message: any, metadata: MetaDataOptionsType = {}) {
         this.writeLog(LOGGER_LEVEL.WARN, reqId || REQUEST_ID, message, metadata);
     }
 
-    info(reqId: string | null, message: any, metadata = {}) {
+    info(reqId: string | null, message: any, metadata: MetaDataOptionsType = {}) {
         this.writeLog(LOGGER_LEVEL.INFO, reqId || REQUEST_ID, message, metadata);
     }
 
-    debug(reqId: string | null, message: any, metadata = {}) {
+    debug(reqId: string | null, message: any, metadata: MetaDataOptionsType = {}) {
         this.writeLog(LOGGER_LEVEL.DEBUG, reqId || REQUEST_ID, message, metadata);
     }
 
-    verbose(reqId: string | null, message: any, metadata = {}) {
+    verbose(reqId: string | null, message: any, metadata: MetaDataOptionsType = {}) {
         this.writeLog(LOGGER_LEVEL.VERBOSE, reqId || REQUEST_ID, message, metadata);
     }
 
-    http(reqId: string | null, message: any, metadata = {}) {
+    http(reqId: string | null, message: any, metadata: MetaDataOptionsType = {}) {
         this.writeLog(LOGGER_LEVEL.HTTP, reqId || REQUEST_ID, message, metadata);
     }
 
-    silly(reqId: string | null, message: any, metadata = {}) {
+    silly(reqId: string | null, message: any, metadata: MetaDataOptionsType = {}) {
         this.writeLog(LOGGER_LEVEL.SILLY, reqId || REQUEST_ID, message, metadata);
     }
 

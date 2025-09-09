@@ -1,41 +1,49 @@
+
 # traced-logger
 
-[//]: # (### A lightweight logger with color and trace support.)
-### A smart logger with tracing line, log level control, integrations with AWS CloudWatch and Seq, colorized and file logging.
-
-## 📦 Installing
-
-```bash
-    npm install traced-logger
-```
-
-## ✨ Key Features
-
-- Supports multiple log levels (DEBUG, INFO, ERROR, etc.) with colored console output
-- Captures the exact location of the log call (file and line number)
-- Automatically writes logs to files based on environment configuration
-- Integrates with Seq for log management and monitoring
-- Integrates with AWS CloudWatch with built-in Lambda compatibility
-- Easy configuration using environment variables
-- Supports creating multiple customized loggers using a class-based API
+A smart and versatile logger built with **winston** that supports multiple log levels, line tracing, file logging, and integrations with AWS CloudWatch and Seq. It works both in CommonJS and ES Modules environments with TypeScript support.
 
 ---
 
-## 🛠  Usage
+## 📦 Installation
 
-```ts
+```bash
+npm install traced-logger
+```
+
+---
+
+## 🚀 Usage Examples
+
+### CommonJS Example (`example.cjs`)
+
+```javascript
+const { Logger, LOGGER_LEVEL } = require('traced-logger');
+```
+
+### ES Modules / TypeScript Example (`example.esm.ts`)
+```typescript
 import Logger, { LOGGER_LEVEL } from 'traced-logger';
+```
 
+### usage both example:
+
+```typescript
 console.log('Hello World');
-const logger = new Logger('UNIT_TEST', LOGGER_LEVEL.SILLY, [
-    LOGGER_LEVEL.ERROR,
-    LOGGER_LEVEL.WARN,
-    LOGGER_LEVEL.INFO,
-    LOGGER_LEVEL.DEBUG,
-    LOGGER_LEVEL.HTTP,
-    LOGGER_LEVEL.VERBOSE,
-    LOGGER_LEVEL.SILLY,
-]);
+
+const logger = new Logger({
+    serviceName: 'UNIT_TEST',
+    loggingModeLevel: LOGGER_LEVEL.SILLY,
+    lineTraceLevels: [
+        LOGGER_LEVEL.ERROR,
+        LOGGER_LEVEL.WARN,
+        LOGGER_LEVEL.INFO,
+        LOGGER_LEVEL.DEBUG,
+        LOGGER_LEVEL.HTTP,
+        LOGGER_LEVEL.VERBOSE,
+        LOGGER_LEVEL.SILLY,
+    ],
+});
 
 logger.error(null, 'TEST ERROR', { message: 'TEST ERROR' });
 logger.warn(null, 'TEST WARN', { message: 'TEST WARN' });
@@ -44,90 +52,92 @@ logger.debug(null, 'TEST DEBUG', { message: 'TEST DEBUG' });
 logger.verbose(null, 'TEST VERBOSE', { message: 'TEST VERBOSE' });
 logger.http(null, 'TEST HTTP', { message: 'TEST HTTP' });
 logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
+
+const reqId = '0000-000-000-0000';
+
+const taggedLogger = new Logger({
+    serviceName: 'UNIT_TEST',
+    // transportDailyRotateFileOptions: { dirname: '../logs' },
+    // transportSeqOptions: { serverUrl: 'https://localhost:5341', apiKey: 'xyz' },
+    loggingModeLevel: LOGGER_LEVEL.SILLY,
+    lineTraceLevels: [
+        LOGGER_LEVEL.ERROR,
+        LOGGER_LEVEL.WARN,
+        LOGGER_LEVEL.INFO,
+        LOGGER_LEVEL.DEBUG,
+        LOGGER_LEVEL.HTTP,
+        LOGGER_LEVEL.VERBOSE,
+        LOGGER_LEVEL.SILLY,
+    ],
+    tags: ['reqId', 'userId?', 'project'],
+});
+
+taggedLogger.error(reqId, 'TEST ERROR', { message: 'TEST ERROR', userId: '1111', project: 'AAA' });
+taggedLogger.warn(reqId, 'TEST WARN', { message: 'TEST WARN', userId: '1111', project: 'AAA' });
+taggedLogger.info(reqId, 'TEST INFO', { message: 'TEST INFO', project: 'AAA' });
+taggedLogger.debug(reqId, 'TEST DEBUG', { message: 'TEST DEBUG', userId: '1111' });
+taggedLogger.verbose(reqId, 'TEST VERBOSE', { message: 'TEST VERBOSE', userId: '2222' });
+taggedLogger.http(reqId, 'TEST HTTP', { message: 'TEST HTTP', userId: '3333', project: 'AAA' });
+taggedLogger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' });
+
 ```
 
-![Logger Diagram](logger-output.webp)
+![Logger Output](logger-output.webp)
+---
+
+
+## 🔑 Key Features
+
+- Multi-level logging with rich log levels like ERROR, WARN, INFO, DEBUG, HTTP, VERBOSE, SILLY.
+- Supports line tracing for specified levels to get exact file and line info.
+- Flexible tagging for logs (like requestId, userId, project).
+- Console, rotating daily file logging, error file logging.
+- Integration with Seq log server.
+- Integration with AWS CloudWatch, optimized for Lambda.
+- Runs locally or in serverless environments.
+- Easily configurable via constructor options.
 
 ---
 
-# ⚙️ Environment Configuration for `traced-logger`
+## ⚙️ Configuration Options
 
-This document lists and describes all `process.env` variables used by the `traced-logger` package.  
-Set these variables in your `.env` file or environment to control logging behavior, integrations, and runtime context.
-
----
-
-## 🧠 Base Configuration
-
-| Variable          | Description                                      | Example            |
-|------------------|--------------------------------------------------|--------------------|
-| `NODE_ENV`       | Current environment mode                         | `local`, `test`, `production` |
-| `SERVICE_NAME`   | Name of the service for log tagging              | `SERVER`           |
-
----
-
-## ✍ Logging Behavior
-
-| Variable              | Description                                                   | Example             |
-|----------------------|---------------------------------------------------------------|---------------------|
-| `LOGGING_MODE`       | Minimum log level to display                                   | `debug`, `info`     |
-| `LOGGING_LINE_TRACE` | Comma-separated levels that include line tracing in logs      | `error,info`        |
+| Option                         | Description                                                                                     |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `serviceName`                  | Service name to tag logs                                                                        |
+| `loggingModeLevel`             | Minimum log level to output (based on `LOGGER_LEVEL`)                                           |
+| `lineTraceLevels`              | Array of levels for which to capture and attach line trace info                                 |
+| `tags`                        | Array of tag keys to output with logs (e.g. request Id, user Id, project)                        |
+| `transportConsole`            | Enable or disable console logging (default `true`)                                              |
+| `transportDailyRotateFileOptions` | Options for daily rotating file logging (directory, filename pattern, max size, retention, etc.) |
+| `transportDailyErrorRotateFileOptions` | Same as above but for error-level logs only                                               |
+| `transportSeqOptions`         | Configuration for Seq transport (server URL, api key)                                          |
+| `transportCloudWatchOptions`  | AWS CloudWatch configuration (group, stream, keys, region, retention)                          |
+| `defaultMetaData`             | Default metadata to inject in all logs                                                        |
+| `runLocally`                  | Flag to switch behavior for local vs serverless environments                                   |
 
 ---
 
-## 💾 Local File Logging
+## 🎯 How to Use
 
-| Variable                | Description                                      | Example     |
-|------------------------|--------------------------------------------------|-------------|
-| `RUN_LOCALLY`          | Whether to run logger locally (enables file logs)| `1`         |
-| `LOCAL_LOGS_DIR_PATH`  | Path to save log files                           | `./logs`    |
-
----
-
-## 📡 Seq Integration
-
-| Variable           | Description                                | Example                    |
-|-------------------|--------------------------------------------|----------------------------|
-| `LOGGER_USE_SEQ`  | Enable Seq logging                          | `1`                        |
-| `LOGGING_KEY`     | Seq API key                                 | `BOVLE2HO7yVTHZ16rK7t`     |
-| `LOGGING_URL`     | Seq server URL                              | `http://localhost:5341`    |
+1. Import Logger and `LOGGER_LEVEL`.
+2. Instantiate a logger with desired options.
+3. Call logging methods like `.error()`, `.warn()`, `.info()`, `.debug()`, `.verbose()`, `.http()`, `.silly()`.
+4. Use optional `reqId` and additional metadata as needed.
+5. Logs will output to configured transports.
 
 ---
 
-## ☁️ AWS CloudWatch Integration
+## 📖 Environment Variables Support
 
-| Variable                           | Description                                       | Example                |
-|-----------------------------------|---------------------------------------------------|------------------------|
-| `LOGGER_USE_CLOUDWATCH`          | Enable AWS CloudWatch logging                     | `1`                    |
-| `LOGGER_CLOUDWATCH_GROUP_NAME`   | CloudWatch log group name                         | `/ecs/my-service`      |
-| `LOGGER_CLOUDWATCH_STREAM_NAME`  | CloudWatch log stream name                        | `instance-logs`        |
-| `LOGGER_CLOUDWATCH_RETENTION_IN_DAYS` | Number of days to retain logs in CloudWatch  | `3`                    |
-| `AWS_ACCESS_KEY_ID`              | AWS access key ID                                 | `AKIA...`              |
-| `AWS_SECRET_ACCESS_KEY`          | AWS secret access key                             | `abc123...`            |
-| `AWS_REGION`                     | AWS region                                        | `us-east-1`            |
-| `REMOTION_AWS_ACCESS_KEY_ID`     | Used if not in AWS Lambda (fallback key)          | `AKIA...`              |
-| `REMOTION_AWS_SECRET_ACCESS_KEY` | Used if not in AWS Lambda (fallback secret)       | `abc123...`            |
-| `REMOTION_AWS_REGION`            | Used if not in AWS Lambda                         | `us-east-1`            |
+This logger can be configured further via environment variables such as:
+
+- `NODE_ENV` to detect environment.
+- CloudWatch and Seq credentials and URLs.
+- Logging levels and line trace settings.
+- Local log directory and enabling local file logging.
 
 ---
 
-## 🔁 Serverless / Lambda Runtime Detection
-
-| Variable                    | Description                                                  | Example    |
-|----------------------------|--------------------------------------------------------------|------------|
-| `IS_RUNNING_ON_SERVERLESS` | Explicit flag for Serverless environment                     | `true`     |
-| `AWS_LAMBDA_FUNCTION_NAME` | Automatically set by AWS Lambda environment                  | (auto)     |
-| `IS_OFFLINE`               | Used to detect Serverless Offline mode                       | `1` or `true` |
-
----
-
-## ✅ Notes
-
-- **Fallbacks:** When running locally, credentials fall back to `REMOTION_*` keys.
-- **Lambda mode:** Auto-detected by presence of `AWS_LAMBDA_FUNCTION_NAME`, unless `IS_OFFLINE` is set.
-- **Line trace levels:** Must match defined levels in `LOGGER_LEVEL`.
-
----
 
 ## 📊 [Seq](https://datalust.co/seq)
 
@@ -172,15 +182,10 @@ services:
 
 🎥 Demo: [traced-logger SEQ connecting](https://youtu.be/5cKcnRtco44)
 
----
-
-## 🧪 Contributions
-
-Contributions are welcome!
-Feel free to open an issue or submit a pull request to help improve the project.
-
----
 
 ## 📜 License
 
 MIT License
+---
+
+For full source and documentation, visit the repository.
