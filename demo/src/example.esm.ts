@@ -1,33 +1,6 @@
-import Logger, { LOGGER_LEVEL } from 'st-logger';
+import Logger, { LOGGER_LEVEL } from 'stack-trace-logger';
 
 console.log('Hello World');
-
-if (false) {
-    const logger = new Logger({
-        serviceName: 'UNIT_TEST',
-        stackTraceLines: 3,
-        // transportDailyRotateFileOptions: { dirname: '../logs' },
-        // transportSeqOptions: { serverUrl: 'https://localhost:5341', apiKey: 'xyz' },
-        loggingModeLevel: LOGGER_LEVEL.SILLY,
-        lineTraceLevels: [
-            LOGGER_LEVEL.ERROR,
-            LOGGER_LEVEL.WARN,
-            LOGGER_LEVEL.INFO,
-            LOGGER_LEVEL.DEBUG,
-            LOGGER_LEVEL.HTTP,
-            LOGGER_LEVEL.VERBOSE,
-            LOGGER_LEVEL.SILLY,
-        ],
-    });
-
-    logger.error(null, 'TEST ERROR', { message: 'TEST ERROR' });
-    logger.warn(null, 'TEST WARN', { message: 'TEST WARN' });
-    logger.info(null, 'TEST INFO', { message: 'TEST INFO', lineTraceBack: 2 });
-    logger.debug(null, 'TEST DEBUG', { message: 'TEST DEBUG', lineTraceBack: 1 });
-    logger.verbose(null, 'TEST VERBOSE', { message: 'TEST VERBOSE' });
-    logger.http(null, 'TEST HTTP', { message: 'TEST HTTP' });
-    logger.silly(null, 'TEST SILLY', { message: 'TEST SILLY' });
-}
 
 TAG_PROPS: {
     const logger = new Logger({

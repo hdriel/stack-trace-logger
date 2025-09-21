@@ -1,4 +1,4 @@
-const {Logger, LOGGER_LEVEL} = require('traced-logger')
+const { Logger, LOGGER_LEVEL } = require('stack-trace-logger');
 
 console.log('Hello World');
 

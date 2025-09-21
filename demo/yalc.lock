@@ -5,8 +5,8 @@
       "signature": "8494f20a7a14009047fbd00786e187c8",
       "file": true
     },
-    "st-logger": {
-      "signature": "2ddee531715ec9e80ac72f0879d0370f",
+    "stack-trace-logger": {
+      "signature": "7e1ddf8af707404ebb8c8636bf3cafa1",
       "file": true
     }
   }

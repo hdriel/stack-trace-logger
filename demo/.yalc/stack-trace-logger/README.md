@@ -74,7 +74,7 @@ logger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' });
 
 ```
 
-![Logger Output](logger-output.webp)
+![Logger Output](logger-output-screenshot.webp)
 ---
 
 

@@ -7,8 +7,8 @@
     "dev:esm": "tsx src/example.esm.ts",
     "dev:cjs": "node src/example.cjs",
     "yalc:publish": "cd .. && npm run yalc:publish",
-    "yalc:attach": "yalc add st-logger",
-    "yalc:detach": "yalc remove st-logger"
+    "yalc:attach": "yalc add stack-trace-logger",
+    "yalc:detach": "yalc remove stack-trace-logger"
   },
   "devDependencies": {
     "tsx": "^4.20.5",
@@ -20,7 +20,7 @@
     "@datalust/winston-seq": "2.0.0",
     "get-root-path": "^3.0.1",
     "pathe": "^2.0.3",
-    "st-logger": "file:.yalc/st-logger",
+    "stack-trace-logger": "file:.yalc/stack-trace-logger",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "winston-cloudwatch": "^6.3.0",

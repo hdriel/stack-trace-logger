@@ -1,6 +1,6 @@
 {
-  "name": "st-logger",
-  "version": "2.0.3",
+  "name": "stack-trace-logger",
+  "version": "3.0.0",
   "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
   "type": "module",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hdriel/st-logger.git"
+    "url": "git+https://github.com/hdriel/stack-trace-logger.git"
   },
   "lint-staged": {
     "src/**/*.{js,ts,jsx,tsx,json,md}": "prettier --write .",
@@ -33,7 +33,7 @@
   "author": "Hadriel Benjo (https://github.com/hdriel)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hdriel/st-logger/issues"
+    "url": "https://github.com/hdriel/stack-trace-logger/issues"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --out-dir dist",
@@ -52,5 +52,5 @@
     "winston-daily-rotate-file": "^5.0.0",
     "winston-transport": "^4.9.0"
   },
-  "yalcSig": "2ddee531715ec9e80ac72f0879d0370f"
+  "yalcSig": "7e1ddf8af707404ebb8c8636bf3cafa1"
 }
