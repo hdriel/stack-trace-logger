@@ -4,6 +4,10 @@
     "traced-logger": {
       "signature": "8494f20a7a14009047fbd00786e187c8",
       "file": true
+    },
+    "st-logger": {
+      "signature": "eca6a630e35e20def8accb412aec13ee",
+      "file": true
     }
   }
 }

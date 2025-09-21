@@ -7,20 +7,20 @@
     "dev:esm": "tsx src/example.esm.ts",
     "dev:cjs": "node src/example.cjs",
     "yalc:publish": "cd .. && npm run yalc:publish",
-    "yalc:attach": "yalc add traced-logger",
-    "yalc:detach": "yalc remove traced-logger"
+    "yalc:attach": "yalc add st-logger",
+    "yalc:detach": "yalc remove st-logger"
   },
   "devDependencies": {
     "tsx": "^4.20.5",
     "typescript": "~5.8.3",
-    "vite": "^7.1.2"
+    "vite": "7.1.5"
   },
   "dependencies": {
-    "traced-logger": "file:.yalc/traced-logger",
     "@aws-sdk/client-cloudwatch-logs": "^3.835.0",
     "@datalust/winston-seq": "2.0.0",
     "get-root-path": "^3.0.1",
     "pathe": "^2.0.3",
+    "st-logger": "file:.yalc/st-logger",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "winston-cloudwatch": "^6.3.0",

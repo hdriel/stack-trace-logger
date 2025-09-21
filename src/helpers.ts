@@ -42,18 +42,24 @@ export const localMessageFormatter = (
     }: TransformableInfo | PRINTF,
     tagProps: string[] = []
 ): string => {
-    const output = [
-        `[${level}]`,
-        ...tagProps
-            .filter((tag) => metadata[tag.replace('?', '')] || !tag.endsWith('?'))
-            .map((_tag) => {
-                const tag = _tag.replace('?', '');
-                return `[${tag}: ${metadata[tag]}]`;
-            }),
-        message || _message,
-        '|',
-        `${stringifyMetaData(metadata)}`,
-    ]
+    const excludeTagsFromMetaData = tagProps
+        .filter((tag) => !tag.includes('*'))
+        .map((tag) => tag.replace('*', '').replace('?', ''));
+
+    const tagsData = tagProps
+        .filter((tag) => metadata[tag.replace('*', '').replace('?', '')] || !tag.endsWith('?'))
+        .map((_tag) => {
+            const tag = _tag.replace('*', '').replace('?', '');
+            return `[${tag}: ${metadata[tag]}]`;
+        });
+
+    const parsedMetaData = excludeTagsFromMetaData.length
+        ? Object.keys(metadata)
+              .filter((key) => !excludeTagsFromMetaData.includes(key))
+              .reduce((obj, key) => ({ ...obj, [key]: metadata[key] }), {})
+        : metadata;
+
+    const output = [`[${level}]`, ...tagsData, message || _message, '|', `${stringifyMetaData(parsedMetaData)}`]
         .filter((v) => !!v)
         .join(' ');
 
@@ -69,21 +75,29 @@ export const cloudWatchMessageFormatter = (
     { timestamp, level, message, ...metadata }: LogEntry | PRINTF,
     tagProps: string[] = []
 ): string => {
-    return [
-        `[${level}]`,
-        ...tagProps
-            .filter((tag) => !tag.endsWith('?') && metadata[tag.replace('?', '')])
-            .map((_tag) => {
-                const tag = _tag.replace('?', '');
-                return `[${tag}: ${metadata[tag]}]`;
-            }),
-        message,
-        '|',
-        `${stringifyMetaData(metadata)}`,
-    ]
+    const excludeTagsFromMetaData = tagProps
+        .filter((tag) => !tag.includes('*'))
+        .map((tag) => tag.replace('*', '').replace('?', ''));
+
+    const tagsData = tagProps
+        .filter((tag) => metadata[tag.replace('*', '').replace('?', '')] || !tag.endsWith('?'))
+        .map((_tag) => {
+            const tag = _tag.replace('*', '').replace('?', '');
+            return `[${tag}: ${metadata[tag]}]`;
+        });
+
+    const parsedMetaData = excludeTagsFromMetaData.length
+        ? Object.keys(metadata)
+              .filter((key) => !excludeTagsFromMetaData.includes(key))
+              .reduce((obj, key) => ({ ...obj, [key]: metadata[key] }), {})
+        : metadata;
+
+    const output = [`[${level}]`, ...tagsData, message, '|', `${stringifyMetaData(parsedMetaData)}`]
         .filter((v) => !!v)
         .join(' ')
         .replace(/\n/g, '\r');
+
+    return output;
 };
 
 export const getLineTrace = (error: Error, lineCounter = 1) => {

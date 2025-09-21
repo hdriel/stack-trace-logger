@@ -9,7 +9,7 @@ import { LOGGER_LEVEL, type LoggerLevelType, NODE_ENV, REQUEST_ID, TRANSPORT } f
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'pathe';
 
-type MetaDataOptionsType = { lineTraceBack?: number; [key: string]: any };
+type MetaDataOptionsType = { stackTraceLines?: number; [key: string]: any };
 
 export class Logger {
     private readonly logger: LoggerType;
@@ -17,7 +17,7 @@ export class Logger {
     private readonly _loggingModeLevel: LoggerLevelType;
     private readonly lineTraceLevels: LoggerLevelType[];
     private readonly runLocally: boolean;
-    private readonly lineTraceBack: number | Partial<Record<LoggerLevelType, number>>;
+    private readonly stackTraceLines: number | Partial<Record<LoggerLevelType, number>>;
     private readonly tags: string[];
     private transportByType: Record<TRANSPORT, Transport> = {} as Record<TRANSPORT, Transport>;
 
@@ -32,7 +32,7 @@ export class Logger {
         transportDailyErrorRotateFileOptions,
         transportConsole = true,
         defaultMetaData,
-        lineTraceBack = 1,
+        stackTraceLines = 1,
         runLocally = !['production', 'prod', 'dev'].includes(NODE_ENV),
     }: {
         serviceName?: string;
@@ -44,7 +44,7 @@ export class Logger {
         transportDailyErrorRotateFileOptions?: Partial<DailyRotateFileTransportOptions>;
         runLocally?: boolean;
         transportConsole?: boolean;
-        lineTraceBack?: number | Partial<Record<LoggerLevelType, number>>;
+        stackTraceLines?: number | Partial<Record<LoggerLevelType, number>>;
         defaultMetaData?: Record<string, any>;
         transportCloudWatchOptions?: {
             logGroupName: string;
@@ -60,7 +60,7 @@ export class Logger {
         this.lineTraceLevels = lineTraceLevels;
         this.runLocally = runLocally;
         this.tags = tags;
-        this.lineTraceBack = lineTraceBack;
+        this.stackTraceLines = stackTraceLines;
 
         this.logger = winston
             .createLogger({
@@ -207,7 +207,7 @@ export class Logger {
         level: LoggerLevelType,
         reqId: string,
         message: string,
-        { lineTraceBack, ...options }: MetaDataOptionsType = {}
+        { stackTraceLines, ...options }: MetaDataOptionsType = {}
     ) {
         options = JSON.parse(JSON.stringify(options));
         options.service_name = this.serviceName;
@@ -219,14 +219,14 @@ export class Logger {
         }
 
         let lineTrace;
-        if (this.lineTraceLevels.includes(level) || level === LOGGER_LEVEL.ERROR) {
+        if (this.lineTraceLevels.includes(level)) {
             const error = new Error(message); // must make Error right here
-            const _lineTraceBack =
-                lineTraceBack ??
-                (typeof this.lineTraceBack === 'number' ? this.lineTraceBack : this.lineTraceBack?.[level]) ??
+            const _stackTraceLines =
+                stackTraceLines ??
+                (typeof this.stackTraceLines === 'number' ? this.stackTraceLines : this.stackTraceLines?.[level]) ??
                 1;
 
-            lineTrace = getLineTrace(error, _lineTraceBack);
+            lineTrace = getLineTrace(error, _stackTraceLines);
         }
         if (lineTrace) options.line_trace = lineTrace;
 
