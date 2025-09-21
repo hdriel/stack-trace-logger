@@ -1,6 +1,6 @@
 {
   "name": "st-logger",
-  "version": "2.0.2",
+  "version": "1.0.0",
   "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
   "type": "module",
   "types": "dist/index.d.ts",
