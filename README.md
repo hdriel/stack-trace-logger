@@ -1,5 +1,5 @@
 
-# traced-logger
+# stack-trace-logger
 
 A smart and versatile logger built with **winston** that supports multiple log levels, line tracing, file logging, and integrations with AWS CloudWatch and Seq. It works both in CommonJS and ES Modules environments with TypeScript support.
 
@@ -16,7 +16,7 @@ A smart and versatile logger built with **winston** that supports multiple log l
 ## 📦 Installation
 
 ```bash
-  npm install traced-logger
+  npm install stack-trace-logger
 ```
 
 ---
@@ -26,12 +26,12 @@ A smart and versatile logger built with **winston** that supports multiple log l
 ### CommonJS Example (`example.cjs`)
 
 ```javascript
-const { Logger, LOGGER_LEVEL } = require('traced-logger');
+const { Logger, LOGGER_LEVEL } = require('stack-trace-logger');
 ```
 
 ### ES Modules / TypeScript Example (`example.esm.ts`)
 ```typescript
-import Logger, { LOGGER_LEVEL } from 'traced-logger';
+import Logger, { LOGGER_LEVEL } from 'stack-trace-logger';
 ```
 
 ## ⚙️ Configuration Options
@@ -153,7 +153,7 @@ services:
     SEQ_API_KEY=your-api-key
 ```
 
-🎥 Demo: [traced-logger SEQ connecting](https://youtu.be/5cKcnRtco44)
+🎥 Demo: [stack-trace-logger SEQ connecting](https://youtu.be/5cKcnRtco44)
 
 
 ## 📜 License
