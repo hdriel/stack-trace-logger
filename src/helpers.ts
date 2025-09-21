@@ -95,7 +95,7 @@ export const cloudWatchMessageFormatter = (
     const output = [`[${level}]`, ...tagsData, message, '|', `${stringifyMetaData(parsedMetaData)}`]
         .filter((v) => !!v)
         .join(' ')
-        .replace(/\n/g, '\r');
+        .replace(/\n\s+/g, '\r');
 
     return output;
 };
