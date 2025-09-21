@@ -3,12 +3,12 @@
 
 A smart and versatile logger built with **winston** that supports multiple log levels, line tracing, file logging, and integrations with AWS CloudWatch and Seq. It works both in CommonJS and ES Modules environments with TypeScript support.
 
-<a href="https://github.com/hdriel/stack-trace-logger">
-    <img src="npm.png" alt="GitHub" width="50" height="50">
+<a href="https://www.npmjs.com/package/stack-trace-logger">
+    <img src="./npm.png" alt="GitHub" width="50" height="50">
 </a>
 
 <a href="https://github.com/hdriel/stack-trace-logger">
-  <img src="github.png" alt="GitHub" width="50" height="50">
+  <img src="./github.png" alt="GitHub" width="50" height="50">
 </a>
 
 --- 
@@ -82,7 +82,7 @@ logger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' });
 
 ```
 
-![Logger Output](logger-output-screenshot.webp)
+![Logger Output](./logger-output-screenshot.webp)
 ---
 
 
