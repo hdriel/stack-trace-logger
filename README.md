@@ -28,20 +28,20 @@ import Logger, { LOGGER_LEVEL } from 'traced-logger';
 
 ## ⚙️ Configuration Options
 
-| Option                                 | Description                                                                                                                                                        |
-|----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `serviceName`                          | Service name to tag logs                                                                                                                                           |
-| `loggingModeLevel`                     | Minimum log level to output (based on `LOGGER_LEVEL`  error <  warn < info < http < verbose < debug < silly )                                                      |
-| `lineTraceLevels`                      | Array of levels for which to capture and attach line trace info                                                                                                    |
-| `stackTraceLines`                      | number of stack trace lines to include per log level. specifying the depth per log level.                                                                          |
-| `tags`                                 | Array of tag keys to output with logs, e.g. [userId=123] [reqId=0000-00000-000-00] [url=/users/123]. for optional tag use ? for example: tags: ['reqId', 'userId?'] |
-| `transportConsole`                     | Enable or disable console logging (default `true`)                                                                                                                 |
-| `transportDailyRotateFileOptions`      | Options for daily rotating file logging (directory, filename pattern, max size, retention, etc.)                                                                   |
-| `transportDailyErrorRotateFileOptions` | Same as above but for error-level logs only                                                                                                                        |
-| `transportSeqOptions`                  | Configuration for Seq transport (server URL, api key)                                                                                                              |
-| `transportCloudWatchOptions`           | AWS CloudWatch configuration (group, stream, keys, region, retention)                                                                                              |
-| `defaultMetaData`                      | Default metadata to inject in all logs                                                                                                                             |
-| `runLocally`                           | Flag to switch behavior for local vs serverless environments                                                                                                       |
+| Option                                 | Description                                                                                                                                                                                                                                                          |
+|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `serviceName`                          | Service name to tag logs                                                                                                                                                                                                                                             |
+| `loggingModeLevel`                     | Minimum log level to output (based on `LOGGER_LEVEL`  error <  warn < info < http < verbose < debug < silly )                                                                                                                                                        |
+| `lineTraceLevels`                      | Array of levels for which to capture and attach line trace info                                                                                                                                                                                                      |
+| `stackTraceLines`                      | number of stack trace lines to include per log level. specifying the depth per log level.                                                                                                                                                                            |
+| `tags`                                 | Array of tag keys to output with logs, e.g. [userId=123] [reqId=0000-00000-000-00] [url=/users/123].<br/> for optional tag use ? for example: tags: ['reqId', 'userId?'] <br/> to include tag as metaData start with strike for example: tags: ['reqId', '*userId?'] |
+| `transportConsole`                     | Enable or disable console logging (default `true`)                                                                                                                                                                                                                   |
+| `transportDailyRotateFileOptions`      | Options for daily rotating file logging (directory, filename pattern, max size, retention, etc.)                                                                                                                                                                     |
+| `transportDailyErrorRotateFileOptions` | Same as above but for error-level logs only                                                                                                                                                                                                                          |
+| `transportSeqOptions`                  | Configuration for Seq transport (server URL, api key)                                                                                                                                                                                                                |
+| `transportCloudWatchOptions`           | AWS CloudWatch configuration (group, stream, keys, region, retention)                                                                                                                                                                                                |
+| `defaultMetaData`                      | Default metadata to inject in all logs                                                                                                                                                                                                                               |
+| `runLocally`                           | Flag to switch behavior for local vs serverless environments                                                                                                                                                                                                         |
 
 
 ### usage example
@@ -57,25 +57,24 @@ const logger = new Logger({
         LOGGER_LEVEL.DEBUG,
         LOGGER_LEVEL.HTTP,
         LOGGER_LEVEL.VERBOSE,
-        LOGGER_LEVEL.SILLY,
+        // LOGGER_LEVEL.SILLY,
     ],
-    stackTraceLines: { error: 3, info: 2, warn: 3 }, // print for error,warnning level logs 3 last lines, and for info level the 2 last callstack lines, rest log level for 1 last callstack line from the log call
-    tags: ['reqId', 'userId?', 'project'],
+    stackTraceLines: { error: 3, info: 2, warn: 3 },
+    tags: ['reqId', '*userId?', 'project'],
 });
 
-
 const reqId = '0000-000-000-0000';
-logger.error(reqId, 'TEST ERROR', { message: 'TEST ERROR', userId: '1111', project: 'AAA', stackTraceLines: 1 }); // print 1 last callstack lines from the log call, instead default 3 as defined in constructor
+logger.error(reqId, 'TEST ERROR', { message: 'TEST ERROR', userId: '1111', project: 'AAA', stackTraceLines: 1 });
 logger.warn(reqId, 'TEST WARN', { message: 'TEST WARN', userId: '1111', project: 'AAA' });
 logger.info(reqId, 'TEST INFO', { message: 'TEST INFO', project: 'AAA' });
-logger.debug(reqId, 'TEST DEBUG', { message: 'TEST DEBUG', userId: '1111', stackTraceLines: 3 }); // print 3 last callstack lines from the log call, instead default 1 as undefined in constructor
+logger.debug(reqId, 'TEST DEBUG', { message: 'TEST DEBUG', userId: '1111', stackTraceLines: 3 });
 logger.verbose(reqId, 'TEST VERBOSE', { message: 'TEST VERBOSE', userId: '2222' });
 logger.http(reqId, 'TEST HTTP', { message: 'TEST HTTP', userId: '3333', project: 'AAA' });
 logger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' });
 
 ```
 
-![Logger Output](logger-output.webp)
+![Logger Output](logger-output-screenshot.webp)
 ---
 
 

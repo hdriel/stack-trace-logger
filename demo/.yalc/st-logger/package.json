@@ -1,6 +1,6 @@
 {
   "name": "st-logger",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
   "type": "module",
   "types": "dist/index.d.ts",
@@ -52,5 +52,5 @@
     "winston-daily-rotate-file": "^5.0.0",
     "winston-transport": "^4.9.0"
   },
-  "yalcSig": "eca6a630e35e20def8accb412aec13ee"
+  "yalcSig": "2ddee531715ec9e80ac72f0879d0370f"
 }

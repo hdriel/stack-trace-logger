@@ -40,7 +40,7 @@ TAG_PROPS: {
             LOGGER_LEVEL.DEBUG,
             LOGGER_LEVEL.HTTP,
             LOGGER_LEVEL.VERBOSE,
-            LOGGER_LEVEL.SILLY,
+            // LOGGER_LEVEL.SILLY,
         ],
         stackTraceLines: { error: 3, info: 2, warn: 3 },
         tags: ['reqId', '*userId?', 'project'],
