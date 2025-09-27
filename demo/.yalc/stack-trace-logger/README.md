@@ -1,14 +1,16 @@
 
-# traced-logger
-
+# stack-trace-logger
 A smart and versatile logger built with **winston** that supports multiple log levels, line tracing, file logging, and integrations with AWS CloudWatch and Seq. It works both in CommonJS and ES Modules environments with TypeScript support.
 
----
+[![NPM](https://nodei.co/npm/stack-trace-logger.svg)](https://nodei.co/npm/stack-trace-logger/)
+
+
+--- 
 
 ## 📦 Installation
 
 ```bash
-  npm install traced-logger
+  npm install stack-trace-logger
 ```
 
 ---
@@ -18,12 +20,12 @@ A smart and versatile logger built with **winston** that supports multiple log l
 ### CommonJS Example (`example.cjs`)
 
 ```javascript
-const { Logger, LOGGER_LEVEL } = require('traced-logger');
+const { Logger, LOGGER_LEVEL } = require('stack-trace-logger');
 ```
 
 ### ES Modules / TypeScript Example (`example.esm.ts`)
 ```typescript
-import Logger, { LOGGER_LEVEL } from 'traced-logger';
+import Logger, { LOGGER_LEVEL } from 'stack-trace-logger';
 ```
 
 ## ⚙️ Configuration Options
@@ -74,7 +76,7 @@ logger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' });
 
 ```
 
-![Logger Output](logger-output-screenshot.webp)
+![Logger Output](./logger-output-screenshot.webp)
 ---
 
 
@@ -145,12 +147,29 @@ services:
     SEQ_API_KEY=your-api-key
 ```
 
-🎥 Demo: [traced-logger SEQ connecting](https://youtu.be/5cKcnRtco44)
+```typescript
+const logger = new Logger({
+    serviceName: 'UNIT_TEST',
+    tags: ['reqId', '*userId?', 'project'],
+    loggingModeLevel: LOGGER_LEVEL.INFO,
+    lineTraceLevels: [ LOGGER_LEVEL.ERROR ],
+    transportSeqOptions: {
+        apiKey: ENV.SEQ_API_KEY, // get from your environment variables 
+        serverUrl: ENV.SEQ_SERVER_URL, // localhost: 'http://localhost:5341',
+    },
+});
+```
+
+🎥 Seq demo: [stack-trace-logger SEQ connecting](https://youtu.be/5cKcnRtco44)
 
 
 ## 📜 License
 
 MIT License
+
 ---
 
-For full source and documentation, visit the repository.
+For full source and documentation, visit the [repository](https://github.com/hdriel/stack-trace-logger).
+
+[![npm](npm.png)](https://www.npmjs.com/package/stack-trace-logger)
+[![github](github.png)](https://github.com/hdriel/stack-trace-logger)

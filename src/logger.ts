@@ -53,6 +53,7 @@ export class Logger {
             awsSecretKey: string;
             awsRegion: string;
             retentionInDays: number;
+            level?: LoggerLevelType;
         };
     }) {
         this.serviceName = serviceName;
@@ -144,6 +145,7 @@ export class Logger {
             // https://copyprogramming.com/howto/winston-cloudwatch-transport-not-creating-logs-when-running-on-lambda
             const cwOptions: CloudwatchTransportOptions = {
                 ...transportCloudWatchOptions,
+                level: transportCloudWatchOptions.level ?? loggingModeLevel,
                 name: `${this.serviceName}-LOGS`,
                 messageFormatter: (props) => cloudWatchMessageFormatter(props, this.tags),
                 logStreamName: function () {
