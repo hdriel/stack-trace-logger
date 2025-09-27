@@ -149,7 +149,20 @@ services:
     SEQ_API_KEY=your-api-key
 ```
 
-🎥 Demo: [stack-trace-logger SEQ connecting](https://youtu.be/5cKcnRtco44)
+```typescript
+const logger = new Logger({
+    serviceName: 'UNIT_TEST',
+    tags: ['reqId', '*userId?', 'project'],
+    loggingModeLevel: LOGGER_LEVEL.INFO,
+    lineTraceLevels: [ LOGGER_LEVEL.ERROR ],
+    transportSeqOptions: {
+        apiKey: ENV.SEQ_API_KEY, // get from your environment variables 
+        serverUrl: ENV.SEQ_SERVER_URL, // localhost: 'http://localhost:5341',
+    },
+});
+```
+
+🎥 Seq demo: [stack-trace-logger SEQ connecting](https://youtu.be/5cKcnRtco44)
 
 
 ## 📜 License
@@ -157,4 +170,5 @@ services:
 MIT License
 ---
 
-For full source and documentation, visit the repository.
+For full source and documentation, visit the [repository](https://github.com/hdriel/stack-trace-logger).
+

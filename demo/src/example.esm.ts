@@ -5,6 +5,7 @@ console.log('Hello World');
 TAG_PROPS: {
     const logger = new Logger({
         serviceName: 'UNIT_TEST',
+        tags: ['reqId', '*userId?', 'project'],
         loggingModeLevel: LOGGER_LEVEL.SILLY,
         lineTraceLevels: [
             LOGGER_LEVEL.ERROR,
@@ -16,7 +17,6 @@ TAG_PROPS: {
             // LOGGER_LEVEL.SILLY,
         ],
         stackTraceLines: { error: 3, info: 2, warn: 3 },
-        tags: ['reqId', '*userId?', 'project'],
     });
 
     const reqId = '0000-000-000-0000';
