@@ -157,7 +157,7 @@ export class Logger {
             const cloudWatchTransport = new CloudWatchTransport(cwOptions);
             this.logger.add(cloudWatchTransport);
             this.transportByType[TRANSPORT.CLOUD_WATCH] = cloudWatchTransport;
-            console.log('CloudWatch winston logger extension Added');
+            console.log('CloudWatch winston logger extension Added on level', cwOptions.level);
         }
 
         this.logger.on('error', (error: any) => {
