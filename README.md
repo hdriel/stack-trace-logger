@@ -1,10 +1,8 @@
 
 # stack-trace-logger
-
 A smart and versatile logger built with **winston** that supports multiple log levels, line tracing, file logging, and integrations with AWS CloudWatch and Seq. It works both in CommonJS and ES Modules environments with TypeScript support.
 
-[![npm](npm.png)](https://www.npmjs.com/package/stack-trace-logger)
-[![github](github.png)](https://github.com/hdriel/stack-trace-logger)
+[![NPM](https://nodei.co/npm/stack-trace-logger.svg)](https://nodei.co/npm/stack-trace-logger/)
 
 
 --- 
@@ -168,7 +166,10 @@ const logger = new Logger({
 ## 📜 License
 
 MIT License
+
 ---
 
 For full source and documentation, visit the [repository](https://github.com/hdriel/stack-trace-logger).
 
+[![npm](npm.png)](https://www.npmjs.com/package/stack-trace-logger)
+[![github](github.png)](https://github.com/hdriel/stack-trace-logger)
