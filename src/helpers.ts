@@ -64,7 +64,7 @@ export const localMessageFormatter = (
         .join(' ');
 
     if (colorize) {
-        return colorizer.colorize(level, `${timestamp} ${output}\n`);
+        return colorizer.colorize(level, `${timestamp} ${output}`);
     }
 
     // https://www.brcline.com/blog/aws-lambda-logging-best-practices
