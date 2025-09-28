@@ -91,6 +91,17 @@ logger.silly(reqId, 'TEST SILLY', { message: 'TEST SILLY', userId: '1111' });
 - Runs locally or in serverless environments.
 - Easily configurable via constructor options.
 
+# NOTICE
+
+This logger support aws-sdk-v3, it's mean that the following params must be defined as ENVIRONMENT VARIABLES.<br/>
+therefore, the following params overrdie the process.env variables (if transportCloudWatchOptions defined them)
+
+```typescript
+process.env.AWS_ACCESS_KEY_ID = transportCloudWatchOptions.awsAccessKeyId;
+process.env.AWS_SECRET_ACCESS_KEY = transportCloudWatchOptions.awsSecretKey;
+process.env.AWS_REGION = transportCloudWatchOptions.awsRegion;
+```
+
 ---
 
 

@@ -6,6 +6,7 @@
   "scripts": {
     "dev:esm": "tsx src/example.esm.ts",
     "dev:cjs": "node src/example.cjs",
+    "dev:cw": "tsx src/cw.ts",
     "yalc:publish": "cd .. && npm run yalc:publish",
     "yalc:attach": "yalc add stack-trace-logger",
     "yalc:detach": "yalc remove stack-trace-logger"

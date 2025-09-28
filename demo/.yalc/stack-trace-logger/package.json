@@ -1,6 +1,6 @@
 {
   "name": "stack-trace-logger",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Custom winston logger to support line-trace logs and build in seq log monitor, aws could-watch logs",
   "type": "module",
   "types": "dist/index.d.ts",
@@ -52,5 +52,5 @@
     "winston-daily-rotate-file": "^5.0.0",
     "winston-transport": "^4.9.0"
   },
-  "yalcSig": "5659337398c5f285da0f1d7e11519916"
+  "yalcSig": "a341e33c37a701d9eadbe0f276820af8"
 }

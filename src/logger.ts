@@ -141,12 +141,25 @@ export class Logger {
             console.log('SEQ winston logger extension Added');
         }
 
-        if (transportCloudWatchOptions) {
+        if (
+            transportCloudWatchOptions?.awsAccessKeyId &&
+            transportCloudWatchOptions?.awsSecretKey &&
+            transportCloudWatchOptions?.awsRegion
+        ) {
+            process.env.AWS_ACCESS_KEY_ID = transportCloudWatchOptions.awsAccessKeyId;
+            process.env.AWS_SECRET_ACCESS_KEY = transportCloudWatchOptions.awsSecretKey;
+            process.env.AWS_REGION = transportCloudWatchOptions.awsRegion;
+
             // https://copyprogramming.com/howto/winston-cloudwatch-transport-not-creating-logs-when-running-on-lambda
             const cwOptions: CloudwatchTransportOptions = {
                 ...transportCloudWatchOptions,
                 level: transportCloudWatchOptions.level ?? loggingModeLevel,
-                name: `${this.serviceName}-LOGS`,
+                awsAccessKeyId: transportCloudWatchOptions.awsAccessKeyId,
+                awsRegion: transportCloudWatchOptions.awsRegion,
+                awsSecretKey: transportCloudWatchOptions.awsSecretKey,
+                logGroupName: transportCloudWatchOptions.logGroupName,
+                retentionInDays: transportCloudWatchOptions.retentionInDays,
+                ensureLogGroup: true,
                 messageFormatter: (props) => cloudWatchMessageFormatter(props, this.tags),
                 logStreamName: function () {
                     const date = new Date().toISOString().split('T')[0];
@@ -157,7 +170,7 @@ export class Logger {
             const cloudWatchTransport = new CloudWatchTransport(cwOptions);
             this.logger.add(cloudWatchTransport);
             this.transportByType[TRANSPORT.CLOUD_WATCH] = cloudWatchTransport;
-            console.log('CloudWatch winston logger extension Added on level', cwOptions.level);
+            console.log(`CloudWatch winston logger extension Added on level: "${cwOptions.level}"`, cwOptions);
         }
 
         this.logger.on('error', (error: any) => {
