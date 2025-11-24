@@ -9,7 +9,8 @@ import { LOGGER_LEVEL, type LoggerLevelType, NODE_ENV, REQUEST_ID, TRANSPORT } f
 import { cloudWatchMessageFormatter, localMessageFormatter, getLineTrace } from './helpers';
 import path from 'pathe';
 
-type MetaDataOptionsType = { stackTraceLines?: number; [key: string]: any };
+type TMetaDataOptions = { stackTraceLines?: number; [key: string]: any };
+type MetaDataOptionsType = TMetaDataOptions | null | undefined;
 
 export class Logger {
     private readonly logger: LoggerType;
@@ -218,12 +219,8 @@ export class Logger {
         return this.logger;
     }
 
-    writeLog(
-        level: LoggerLevelType,
-        reqId: string,
-        message: string,
-        { stackTraceLines, ...options }: MetaDataOptionsType = {}
-    ) {
+    writeLog(level: LoggerLevelType, reqId: string, message: string, metaData: MetaDataOptionsType = {}) {
+        let { stackTraceLines, ...options } = metaData || ({} as TMetaDataOptions);
         options = JSON.parse(JSON.stringify(options));
         options.service_name = this.serviceName;
 

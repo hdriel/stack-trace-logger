@@ -17,15 +17,6 @@
     "vite": "7.1.5"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.835.0",
-    "@datalust/winston-seq": "2.0.0",
-    "get-root-path": "^3.0.1",
-    "pathe": "^2.0.3",
-    "stack-trace-logger": "file:.yalc/stack-trace-logger",
-    "uuid": "^11.1.0",
-    "winston": "^3.17.0",
-    "winston-cloudwatch": "^6.3.0",
-    "winston-daily-rotate-file": "^5.0.0",
-    "winston-transport": "^4.9.0"
+    "stack-trace-logger": "file:.yalc/stack-trace-logger"
   }
 }
